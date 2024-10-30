@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AddEvent = () => {
@@ -7,6 +8,7 @@ const AddEvent = () => {
   const [message, setMessage] = useState('');
   const [variant, setVariant] = useState('');
   const [show, setShow] = useState(false);
+  const navigate = useNavigate();
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setIsTeam(event.target.value === 'team');
@@ -38,6 +40,9 @@ const AddEvent = () => {
 
   return (
     <Container className="my-4">
+      <Button variant="success" onClick={() => navigate('/admin')} className='d-none'>
+        Event List
+      </Button>
       <h2 className='text-center'>Add Event</h2>
       {show &&
         <Alert variant={variant} onClose={() => setShow(false)} dismissible>
@@ -116,14 +121,14 @@ const AddEvent = () => {
               </Form.Select>
             </Form.Group>
           </Col>
-          <Col>
-            {isTeam && (
+          {isTeam && (
+            <Col>
               <Form.Group controlId="teamSize" className="mb-3">
                 <Form.Label>Team Size</Form.Label>
                 <Form.Control type="number" name="teamSize" placeholder="Enter max team members" />
               </Form.Group>
-            )}
-          </Col>
+            </Col>
+          )}
         </Row>
 
         <div className="d-flex justify-content-center">

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Dashboard from './admin/Dashboard.tsx'
 import Login from './admin/Login.tsx';
+import Admin from './admin/Admin.tsx';
 
 function App() {
   const [formData, setFormData] = useState({
@@ -109,8 +109,8 @@ function App() {
 
           <Route path="/login" element={<Login onLogin={() => setIsAdminLoggedIn(true)} />} />
           <Route 
-            path="/admin" 
-            element={isAdminLoggedIn ? <Dashboard /> : <Navigate to="/login" />} 
+            path="/admin/*" 
+            element={isAdminLoggedIn ? <Admin /> : <Navigate to="/login" />} 
           />
       </Routes>
     </Router>

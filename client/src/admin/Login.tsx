@@ -13,8 +13,12 @@ function Login({ onLogin }: LoginProps) {
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Replace with your actual admin credentials check
-    if (username === 'admin' && password === 'password123') {
+    // Environment variables for admin credentials
+    const adminUsername = import.meta.env.VITE_ADMIN_USER;
+    const adminPassword = import.meta.env.VITE_ADMIN_PASS;
+
+    // Check credentials
+    if (username === adminUsername && password === adminPassword) {
       onLogin(); // Set login status in parent component
       navigate('/admin'); // Navigate to Admin Dashboard
     } else {

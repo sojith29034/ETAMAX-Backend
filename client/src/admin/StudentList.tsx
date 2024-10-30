@@ -19,7 +19,7 @@ function StudentList() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/students');
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/students`);
         setStudents(response.data);
         setLoading(false);
       } catch (error) {
@@ -39,7 +39,7 @@ function StudentList() {
   const handleSave = async () => {
     if (editedStudent) {
       try {
-        const response = await axios.put(`http://localhost:8080/api/students/${editedStudent._id}`, {
+        const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/students/${editedStudent._id}`, {
           name: editedStudent.name,
           rollNumber: editedStudent.rollNumber,
           email: editedStudent.email
@@ -56,7 +56,7 @@ function StudentList() {
 
   const handleSendEmail = async (email: string) => {
     try {
-      await axios.post('http://localhost:8080/api/send-email', { email });
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/send-email`, { email });
       alert(`Email sent to ${email}`);
     } catch (error) {
       console.error('Error sending email:', error);

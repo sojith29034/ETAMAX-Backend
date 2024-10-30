@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, Button, Container, Row, Col, Form, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -28,7 +28,7 @@ const EventList = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/events');
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events`);
         setEvents(response.data);
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -52,7 +52,7 @@ const EventList = () => {
   const handleDeleteEvent = async () => {
     if (eventToDelete) {
       try {
-        await axios.delete(`http://localhost:8080/api/events/${eventToDelete._id}`);
+        await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/events/${eventToDelete._id}`);
         setEvents(events.filter((event) => event._id !== eventToDelete._id));
         setShowModal(false);
         setEventToDelete(null);
@@ -73,7 +73,7 @@ const EventList = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await axios.post('http://localhost:8080/api/events/delete-multiple', { eventIds: selectedEvents });
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/events/delete-multiple`, { eventIds: selectedEvents });
       setEvents(events.filter((event) => !selectedEvents.includes(event._id)));
       setSelectedEvents([]);
       setSelectAll(false);
@@ -120,7 +120,7 @@ const EventList = () => {
         <Col>
           <Form.Control
             type="text"
-            placeholder="Search by event name"
+            placeholder="Search by event"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

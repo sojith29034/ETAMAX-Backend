@@ -28,7 +28,7 @@ function App() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/students', formData);
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/students`, formData);
 
       if (response.status === 200) {
         console.log('Data saved:', response.data);

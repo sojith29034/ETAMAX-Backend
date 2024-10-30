@@ -8,6 +8,8 @@ const AddEvent = () => {
   const [message, setMessage] = useState('');
   const [variant, setVariant] = useState('');
   const [show, setShow] = useState(false);
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const navigate = useNavigate();
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -18,10 +20,18 @@ const AddEvent = () => {
     event.preventDefault();
     setMessage('');
 
+    // Check if end time is after start time
+    if (endTime <= startTime) {
+      setMessage('End time must be after the start time');
+      setVariant('danger');
+      setShow(true);
+      return;
+    }
+
     const formData = new FormData(event.target as HTMLFormElement);
 
     try {
-      const response = await axios.post('http://localhost:8080/api/events', Object.fromEntries(formData));
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/events`, Object.fromEntries(formData));
       // console.log('Event created successfully:', response.data);
       setMessage(`${response.data.eventName} added successfully`);
       setVariant('success');
@@ -30,6 +40,8 @@ const AddEvent = () => {
       // Reset form fields and states after successful submission
       (event.target as HTMLFormElement).reset();
       setIsTeam(false);
+      setStartTime('');
+      setEndTime('');
     } catch (error) {
       console.error('Error creating event:', error);
       setMessage('Failed to add event');
@@ -94,13 +106,15 @@ const AddEvent = () => {
           <Col>
             <Form.Group controlId="startTime" className="mb-3">
               <Form.Label>Start Time</Form.Label>
-              <Form.Control type="time" name="startTime" step="1800" required />
+              <Form.Control type="time" name="startTime" step="1800" value={startTime}
+                onChange={(e) => setStartTime(e.target.value)} required />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group controlId="endTime" className="mb-3">
               <Form.Label>End Time</Form.Label>
-              <Form.Control type="time" name="endTime" step="1800" required />
+              <Form.Control type="time" name="endTime" step="1800" value={endTime}
+                onChange={(e) => setEndTime(e.target.value)} required />
             </Form.Group>
           </Col>
         </Row>

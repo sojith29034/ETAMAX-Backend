@@ -38,7 +38,7 @@ const EditEvent = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/events/${eventId}`);
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`);
         const data = response.data;
         setFormData({
             ...data,
@@ -77,7 +77,7 @@ const EditEvent = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:8080/api/events/${eventId}`, formData);
+      await axios.put(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`, formData);
       setMessage('Event updated successfully');
       setVariant('success');
       setShow(true);

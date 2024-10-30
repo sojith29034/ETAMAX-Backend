@@ -1,6 +1,11 @@
+import React from 'react';
 import Sidebar from './Sidebar';
 
-const Layout = ({ children }) => {
+interface LayoutProps {
+  children: React.ReactNode;  // Explicitly typing children
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="d-flex">
       <Sidebar />

@@ -4,7 +4,6 @@ import AddEvent from './AddEvent'
 import EventList from './EventList'
 import EditEvent from './EditEvent';
 import Dashboard from './Dashboard';
-import Sidebar from './Sidebar';
 import Layout from './Layout';
 
 const Admin = () => {

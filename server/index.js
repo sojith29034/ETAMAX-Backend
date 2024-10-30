@@ -6,6 +6,7 @@ require('dotenv').config(); // Load environment variables
 
 // Import Routes
 const studentRoutes = require('./routes/studentRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 
 // Initialize Express
 const app = express();
@@ -16,15 +17,17 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL,
-).then(() => {
-  console.log('MongoDB connected');
-}).catch((err) => {
-  console.log('Error connecting to MongoDB:', err);
-});
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => {
+    console.log('MongoDB connected');
+  })
+  .catch((err) => {
+    console.log('Error connecting to MongoDB:', err);
+  });
 
 // Use Routes
 app.use('/api', studentRoutes);
+app.use('/api', eventRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 5000;

@@ -173,7 +173,6 @@ router.post('/login', async (req, res) => {
 // GET route to retrieve a specific student by roll number
 router.get('/students/rollNo/:rollNumber', async (req, res) => {
   const { rollNumber } = req.params;
-  console.log('Fetching student with roll number:', rollNumber); // Debug log
 
   try {
     const student = await Student.findOne({ rollNumber });

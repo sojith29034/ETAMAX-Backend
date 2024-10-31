@@ -145,4 +145,47 @@ router.put('/students/:id', async (req, res) => {
 
 
 
+
+
+// For students to login
+router.post('/login', async (req, res) => {
+  const { rollNumber, password } = req.body;
+
+  try {
+    const student = await Student.findOne({ rollNumber });
+    if (!student) {
+      return res.status(401).json({ message: 'Invalid roll number or password' });
+    }
+
+    const isMatch = await bcrypt.compare(password, student.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid roll number or password' });
+    }
+
+    res.status(200).json({ message: 'Login successful', rollNumber });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+// GET route to retrieve a specific student by roll number
+router.get('/students/rollNo/:rollNumber', async (req, res) => {
+  const { rollNumber } = req.params;
+  console.log('Fetching student with roll number:', rollNumber); // Debug log
+
+  try {
+    const student = await Student.findOne({ rollNumber });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.status(200).json(student);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to retrieve student', error });
+  }
+});
+
+
 module.exports = router;

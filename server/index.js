@@ -7,6 +7,7 @@ require('dotenv').config(); // Load environment variables
 // Import Routes
 const studentRoutes = require('./routes/studentRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
 
 // Initialize Express
 const app = express();
@@ -28,6 +29,7 @@ mongoose.connect(process.env.MONGO_URL)
 // Use Routes
 app.use('/api', studentRoutes);
 app.use('/api', eventRoutes);
+app.use('/api', transactionRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 5000;

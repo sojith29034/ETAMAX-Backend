@@ -5,7 +5,7 @@ const Transaction = require('../models/transaction');
 // Route to create a new transaction
 router.post('/transactions', async (req, res) => {
   try {
-    const { eventId, enrolledId, teamMembers, amount } = req.body;
+    const { eventId, enrolledId, teamMembers, amount, payment } = req.body;
 
     // Create a new transaction
     const newTransaction = new Transaction({
@@ -13,6 +13,7 @@ router.post('/transactions', async (req, res) => {
       enrolledId,
       teamMembers,
       amount,
+      payment,
     });
 
     await newTransaction.save();

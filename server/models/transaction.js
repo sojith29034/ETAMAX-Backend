@@ -23,6 +23,10 @@ const transactionSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  payment: {
+    type: Number,
+    required: true,
+  },
 });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);

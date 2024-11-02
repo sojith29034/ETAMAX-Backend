@@ -13,6 +13,9 @@ const Sidebar = () => {
         <Nav.Link onClick={() => navigate('/admin/events')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
           Event List
         </Nav.Link>
+        <Nav.Link onClick={() => navigate('/admin/transactions')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
+          Transactions
+        </Nav.Link>
         <Nav.Link onClick={() => navigate('/admin/students')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
           Student List
         </Nav.Link>

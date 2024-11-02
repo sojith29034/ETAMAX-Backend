@@ -23,20 +23,39 @@ const EventList = () => {
   const [showModal, setShowModal] = useState(false);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  const [filledSeats, setFilledSeats] = useState<{ [key: string]: number }>({});
   const navigate = useNavigate();
 
+
+
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchEventsAndSeats = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events`);
-        setEvents(response.data);
+        const eventsResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events`);
+        setEvents(eventsResponse.data);
+  
+        // Fetch transactions
+        const transactionsResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
+        const transactions = transactionsResponse.data;
+  
+        // Calculate filled seats for each event
+        const filledSeatsCount = eventsResponse.data.reduce((acc: { [key: string]: number }, event: Event) => {
+          acc[event._id] = transactions.filter(
+            (transaction: { eventId: string; payment: number }) =>
+              transaction.eventId === event._id && transaction.payment === 1
+          ).length;
+          return acc;
+        }, {});
+  
+        setFilledSeats(filledSeatsCount);
       } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error('Error fetching events or transactions:', error);
       }
     };
-
-    fetchEvents();
+  
+    fetchEventsAndSeats();
   }, []);
+  
 
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
@@ -148,7 +167,7 @@ const EventList = () => {
             <th onClick={() => handleSort('eventDay')} style={{ cursor: 'pointer' }}>Day</th>
             <th onClick={() => handleSort('eventCategory')} style={{ cursor: 'pointer' }}>Category</th>
             <th onClick={() => handleSort('startTime')} style={{ cursor: 'pointer' }}>Time</th>
-            <th onClick={() => handleSort('maxSeats')} style={{ cursor: 'pointer' }}>Limit</th>
+            <th onClick={() => handleSort('maxSeats')} style={{ cursor: 'pointer' }}>Seats</th>
             <th onClick={() => handleSort('entryFees')} style={{ cursor: 'pointer' }}>Entry Fee</th>
             <th>Actions</th>
           </tr>
@@ -168,7 +187,7 @@ const EventList = () => {
               <td>Day {event.eventDay}</td>
               <td style={{ textTransform: 'capitalize' }}>{event.eventCategory}</td>
               <td>{`${event.startTime} - ${event.endTime}`}</td>
-              <td>{event.maxSeats}</td>
+              <td>{filledSeats[event._id] || 0} / {event.maxSeats}</td>
               <td>{event.entryFees}</td>
               <td>
                 <Button variant="primary" size="sm" className="me-2" onClick={() => handleEditEvent(event)}>

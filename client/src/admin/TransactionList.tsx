@@ -136,6 +136,7 @@ const TransactionList = () => {
             <th>Event Name</th> {/* Changed to Event Name */}
             <th>Amount</th>
             <th>Transaction Date</th>
+            <th>Payment Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -151,6 +152,7 @@ const TransactionList = () => {
                 <td>{eventNames[transaction.eventId]}</td>
                 <td>{transaction.amount}</td>
                 <td>{new Date(transaction.transactionDate).toLocaleString()}</td>
+                <td>{transaction.payment}</td>
                 <td>
                     <Button variant="primary" size="sm" className="me-2" onClick={() => {
                     setTransactionToConfirm(transaction);

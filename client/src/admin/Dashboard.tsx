@@ -23,6 +23,11 @@ const Dashboard = () => {
             Event List
           </Button>
         </Col>
+        <Col md={3} className="mb-3">
+          <Button variant="warning" className="w-100" onClick={() => navigate('/admin/transactions')}>
+            Transactions
+          </Button>
+        </Col>
       </Row>
     </Container>
   );

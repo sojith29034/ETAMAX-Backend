@@ -132,10 +132,10 @@ const TransactionList = () => {
               <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
             </th>
             <th>Sr No</th>
-            <th>Enrolled ID</th>
+            <th>Enrolled By</th>
             <th>Event Name</th> {/* Changed to Event Name */}
             <th>Amount</th>
-            <th>Transaction Date</th>
+            <th>Enrolled Roll Numbers</th>
             <th>Payment Status</th>
             <th>Actions</th>
           </tr>
@@ -151,7 +151,8 @@ const TransactionList = () => {
                 <td>{transaction.enrolledId}</td>
                 <td>{eventNames[transaction.eventId]}</td>
                 <td>{transaction.amount}</td>
-                <td>{new Date(transaction.transactionDate).toLocaleString()}</td>
+                {/* <td>{new Date(transaction.transactionDate).toLocaleString()}</td> */}
+                <td>{transaction.teamMembers?.join(', ')}</td>
                 <td>{transaction.payment}</td>
                 <td>
                     <Button variant="primary" size="sm" className="me-2" onClick={() => {

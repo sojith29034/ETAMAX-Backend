@@ -56,7 +56,7 @@ function StudentList() {
 
   const handleSendEmail = async (email: string) => {
     try {
-      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/send-email`, { email });
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/students/send-email`, { email });
       alert(`Email sent to ${email}`);
     } catch (error) {
       console.error('Error sending email:', error);

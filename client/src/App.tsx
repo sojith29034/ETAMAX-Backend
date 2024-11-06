@@ -32,7 +32,7 @@ function App() {
 
       if (response.status === 200) {
         console.log('Data saved:', response.data);
-        alert(`${response.data.student.name} registered successfully. Password: ${response.data.rawPassword}`);
+        alert(`${response.data.student.rollNumber} registered successfully. Check ${response.data.student.email} inbox`);
         
         setFormData({
           name: '',

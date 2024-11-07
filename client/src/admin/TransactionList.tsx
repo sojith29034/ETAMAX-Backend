@@ -12,9 +12,16 @@ interface Transaction {
   transactionDate: string;
 }
 
+interface Event {
+  _id: string;
+  eventName: string;
+  maxSeats: number;
+  confirmedSeats: number;
+}
+
 const TransactionList = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [eventNames, setEventNames] = useState<{ [key: string]: string }>({});
+  const [eventDetails, setEventDetails] = useState<{ [key: string]: Event }>({});
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,28 +36,37 @@ const TransactionList = () => {
         const transactionResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
         setTransactions(transactionResponse.data);
 
-        // Extracting eventIds
+        // Extract event IDs and fetch event details concurrently
         const eventIds = transactionResponse.data.map((transaction: Transaction) => transaction.eventId);
+        const uniqueEventIds = Array.from(new Set(eventIds));
+        const eventResponses = await Promise.all(
+          (uniqueEventIds as string[]).map((eventId: string) =>
+            axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
+          )
+        );
         
-        // Fetch event details concurrently using Promise.all
-        const eventResponses = await Promise.all(eventIds.map((eventId: string) => 
-          axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
-        ));
-    
-        // Create a mapping of eventId to event name
-        const eventNamesMap = eventResponses.reduce((acc, response) => {
-          acc[response.data._id] = response.data.eventName; // Adjust based on your event schema
+        
+        // Create a mapping of eventId to event details with confirmed seats calculation
+        const eventDetailsMap = eventResponses.reduce((acc, response) => {
+          const eventData: Event = response.data;
+          acc[eventData._id] = {
+            ...eventData,
+            confirmedSeats: transactionResponse.data.filter((transaction: Transaction) =>
+              transaction.eventId === eventData._id && transaction.payment === 1
+            ).length, // Count confirmed transactions for this event
+          };
           return acc;
-        }, {} as { [key: string]: string });
-    
-        setEventNames(eventNamesMap);
+        }, {} as { [key: string]: Event });
+        
+
+        setEventDetails(eventDetailsMap);
       } catch (error) {
-        console.error('Error fetching transactions:', error);
+        console.error('Error fetching transactions or events:', error);
       }
     };
 
     fetchTransactions();
-  }, [eventNames]);
+  }, []);
 
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
@@ -67,15 +83,29 @@ const TransactionList = () => {
 
   const confirmTransaction = async () => {
     if (transactionToConfirm) {
-      try {
-        await axios.put(`${import.meta.env.VITE_BASE_URL}/api/transactions/${transactionToConfirm._id}`, { payment: 1 });
-        setTransactions(transactions.map(transaction =>
-          transaction._id === transactionToConfirm._id ? { ...transaction, payment: 1 } : transaction
-        ));
+      const event = eventDetails[transactionToConfirm.eventId];
+      if (event && event.confirmedSeats < event.maxSeats) {
+        try {
+          await axios.put(`${import.meta.env.VITE_BASE_URL}/api/transactions/${transactionToConfirm._id}`, { payment: 1 });
+          setTransactions(transactions.map(transaction =>
+            transaction._id === transactionToConfirm._id ? { ...transaction, payment: 1 } : transaction
+          ));
+          setEventDetails({
+            ...eventDetails,
+            [event._id]: {
+              ...event,
+              confirmedSeats: event.confirmedSeats + 1, // Update confirmed seat count
+            }
+          });
+          setShowConfirmModal(false);
+          setTransactionToConfirm(null);
+        } catch (error) {
+          console.error('Error confirming transaction:', error);
+        }
+      } else {
+        alert('Cannot confirm payment: Event seats are full.');
         setShowConfirmModal(false);
         setTransactionToConfirm(null);
-      } catch (error) {
-        console.error('Error confirming transaction:', error);
       }
     }
   };
@@ -99,7 +129,7 @@ const TransactionList = () => {
   };
 
   const filteredTransactions = transactions.filter((transaction: Transaction) =>
-    transaction.enrolledId.includes(searchTerm)
+    transaction.enrolledId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -149,7 +179,7 @@ const TransactionList = () => {
                 </td>
                 <td>{index + 1}</td>
                 <td>{transaction.enrolledId}</td>
-                <td>{eventNames[transaction.eventId]}</td>
+                <td>{eventDetails[transaction.eventId]?.eventName}</td>
                 <td>{transaction.amount}</td>
                 {/* <td>{new Date(transaction.transactionDate).toLocaleString()}</td> */}
                 <td>{transaction.teamMembers?.join(', ')}</td>
@@ -181,7 +211,7 @@ const TransactionList = () => {
             <>
                 Are you sure you want to confirm the transaction for enrolled ID{' '}
                 <strong>{transactionToConfirm.enrolledId}</strong> for{' '}
-                <strong>{eventNames[transactionToConfirm.eventId] || 'Event Name Unavailable'}</strong>?
+                <strong>{eventDetails[transactionToConfirm.eventId]?.eventName || 'Event Name Unavailable'}</strong>?
             </>
             ) : (
             <p>Loading transaction details...</p>
@@ -207,7 +237,7 @@ const TransactionList = () => {
             <>
                 Are you sure you want to delete the transaction for enrolled ID{' '}
                 <strong>{transactionToDelete.enrolledId}</strong> related to{' '}
-                <strong>{eventNames[transactionToDelete.eventId] || 'Event Name Unavailable'}</strong>?
+                <strong>{eventDetails[transactionToDelete.eventId]?.eventName || 'Event Name Unavailable'}</strong>?
             </>
             ) : (
             <p>Loading transaction details...</p>

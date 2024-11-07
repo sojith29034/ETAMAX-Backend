@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Container, Row, Col, Form, Modal } from 'react-bootstrap';
+import { Table, Button, Container, Row, Col, Form, Modal, Alert } from 'react-bootstrap';
 import axios from 'axios';
 
 interface Transaction {
@@ -29,6 +29,7 @@ const TransactionList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [transactionToConfirm, setTransactionToConfirm] = useState<Transaction | null>(null);
+  const [showAlert, setShowAlert] = useState<{ message: string; variant: string } | null>(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -103,7 +104,7 @@ const TransactionList = () => {
           console.error('Error confirming transaction:', error);
         }
       } else {
-        alert('Cannot confirm payment: Event seats are full.');
+        setShowAlert({ message: 'Cannot confirm payment: Event seats are full.', variant: 'danger' });
         setShowConfirmModal(false);
         setTransactionToConfirm(null);
       }
@@ -128,6 +129,21 @@ const TransactionList = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(
+        selectedTransactions.map(async (transactionId) => {
+          await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/transactions/${transactionId}`);
+        })
+      );
+      setTransactions(transactions.filter((transaction) => !selectedTransactions.includes(transaction._id)));
+      setSelectedTransactions([]);
+    } catch (error) {
+      console.error('Error deleting transactions:', error);
+    }
+  };
+  
+
   const filteredTransactions = transactions.filter((transaction: Transaction) =>
     transaction.enrolledId.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -147,8 +163,14 @@ const TransactionList = () => {
           />
         </Col>
         <Col className="text-end">
+          {showAlert && (
+            <Alert variant={showAlert.variant} onClose={() => setShowAlert(null)} dismissible 
+            style={{ position:'absolute', top:'40px', right:'40px' }}>
+              {showAlert.message}
+            </Alert>
+          )}
           {selectedTransactions.length > 0 && (
-            <Button variant="danger" className="me-2" onClick={() => { /* Add bulk delete functionality if needed */ }}>
+            <Button variant="danger" className="me-2" onClick={handleBulkDelete}>
               Delete Selected
             </Button>
           )}
@@ -163,7 +185,7 @@ const TransactionList = () => {
             </th>
             <th>Sr No</th>
             <th>Enrolled By</th>
-            <th>Event Name</th> {/* Changed to Event Name */}
+            <th>Event Name</th>
             <th>Amount</th>
             <th>Enrolled Roll Numbers</th>
             <th>Payment Status</th>
@@ -181,15 +203,21 @@ const TransactionList = () => {
                 <td>{transaction.enrolledId}</td>
                 <td>{eventDetails[transaction.eventId]?.eventName}</td>
                 <td>{transaction.amount}</td>
-                {/* <td>{new Date(transaction.transactionDate).toLocaleString()}</td> */}
                 <td>{transaction.teamMembers?.join(', ')}</td>
                 <td>{transaction.payment}</td>
                 <td>
-                    <Button variant="primary" size="sm" className="me-2" onClick={() => {
-                    setTransactionToConfirm(transaction);
-                    setShowConfirmModal(true);
-                    }}>
-                    Confirm Payment
+                    <Button variant="primary" size="sm" className="me-2" 
+                      onClick={() => {
+                        const event = eventDetails[transaction.eventId];
+                        if (event && event.confirmedSeats < event.maxSeats) {
+                          setTransactionToConfirm(transaction);
+                          setShowConfirmModal(true);
+                        } else {
+                          setShowAlert({ message: 'Cannot confirm payment: Event seats are full.', variant: 'danger' });
+                        }
+                      }}
+                    >
+                      Confirm Payment
                     </Button>
                     <Button variant="danger" size="sm" onClick={() => confirmDeleteTransaction(transaction)}>
                     Delete

@@ -79,6 +79,57 @@ router.post('/students', async (req, res) => {
   }
 });
 
+// POST route to send an email with a new password to a specific student by email address
+router.post('/students/send-email', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Find the student by email
+    const student = await Student.findOne({ email });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Generate a new password and hash it
+    const newRawPassword = generateRandomPassword();
+    const hashedPassword = await bcrypt.hash(newRawPassword, 10);
+
+    // Update the student's password in the database with the hashed version
+    student.password = hashedPassword;
+    await student.save();
+
+    // Send the new password via email
+    const emailSent = await sendRegistrationEmail(student.email, student.rollNumber, newRawPassword);
+
+    if (emailSent) {
+      res.status(200).json({ message: `Email sent to ${student.email} with a new password` });
+    } else {
+      res.status(500).json({ message: `Failed to send email to ${student.email}` });
+    }
+  } catch (error) {
+    console.error('Error sending email with new password:', error);
+    res.status(500).json({ message: 'Server error while sending email' });
+  }
+});
+
+
+// DELETE route to remove a student by ID
+router.delete('/students/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedStudent = await Student.findByIdAndDelete(id);
+    if (!deletedStudent) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.status(200).json({ message: 'Student deleted successfully', student: deletedStudent });
+  } catch (error) {
+    console.error('Error deleting student:', error);
+    res.status(500).json({ message: 'Failed to delete student', error });
+  }
+});
+
+
 // GET route to retrieve all students
 router.get('/students', async (req, res) => {
   try {

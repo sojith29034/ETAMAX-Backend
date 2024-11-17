@@ -6,6 +6,7 @@ import EditEvent from './EditEvent';
 import Dashboard from './Dashboard';
 import Layout from './Layout';
 import TransactionList from './TransactionList';
+import Defaulters from './Defaulters';
 
 const Admin = () => {
   return (
@@ -18,6 +19,7 @@ const Admin = () => {
                 <Route path="/transactions" element={<TransactionList />} />
                 <Route path="/add-event" element={<AddEvent />} />
                 <Route path="/edit-event/:eventId" element={<EditEvent />} />
+                <Route path="/defaulter" element={<Defaulters />} />
             </Routes>
         </Layout>
     </div>

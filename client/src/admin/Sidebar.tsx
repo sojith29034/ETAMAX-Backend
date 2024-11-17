@@ -22,6 +22,9 @@ const Sidebar = () => {
         <Nav.Link onClick={() => navigate('/admin/add-event')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
           Add Event
         </Nav.Link>
+        <Nav.Link onClick={() => navigate('/admin/defaulter')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
+          Defaulters
+        </Nav.Link>
       </Nav>
     </div>
   );

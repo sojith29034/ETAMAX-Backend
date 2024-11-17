@@ -7,6 +7,7 @@ import Dashboard from './Dashboard';
 import Layout from './Layout';
 import TransactionList from './TransactionList';
 import Defaulters from './Defaulters';
+import Attendance from './Attendance';
 
 const Admin = () => {
   return (
@@ -19,6 +20,7 @@ const Admin = () => {
                 <Route path="/transactions" element={<TransactionList />} />
                 <Route path="/add-event" element={<AddEvent />} />
                 <Route path="/edit-event/:eventId" element={<EditEvent />} />
+                <Route path="/attendance" element={<Attendance />} />
                 <Route path="/defaulter" element={<Defaulters />} />
             </Routes>
         </Layout>

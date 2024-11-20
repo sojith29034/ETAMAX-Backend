@@ -145,7 +145,8 @@ const TransactionList = () => {
   
 
   const filteredTransactions = transactions.filter((transaction: Transaction) =>
-    transaction.enrolledId.toLowerCase().includes(searchTerm.toLowerCase())
+    transaction.enrolledId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.teamMembers.some(member => member.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (

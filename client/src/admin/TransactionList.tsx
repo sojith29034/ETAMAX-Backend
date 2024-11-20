@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Container, Row, Col, Form, Modal, Alert } from 'react-bootstrap';
+import { Table, Button, Container, Row, Col, Form, Modal, Alert, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 
 interface Transaction {
   _id: string;
   enrolledId: string;
   eventId: string;
+  teamName: string;
   teamMembers: string[];
   amount: number;
   payment: number;
@@ -30,44 +31,46 @@ const TransactionList = () => {
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [transactionToConfirm, setTransactionToConfirm] = useState<Transaction | null>(null);
   const [showAlert, setShowAlert] = useState<{ message: string; variant: string } | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchTransactions = async () => {
+      setLoading(true);  // Set loading to true when starting the API call
       try {
         const transactionResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
         setTransactions(transactionResponse.data);
 
-        // Extract event IDs and fetch event details concurrently
-        const eventIds = transactionResponse.data.map((transaction: Transaction) => transaction.eventId);
-        const uniqueEventIds = Array.from(new Set(eventIds));
+        const eventIds: string[] = transactionResponse.data.map((transaction: Transaction) => transaction.eventId);
+        const uniqueEventIds: string[] = Array.from(new Set(eventIds));
+
         const eventResponses = await Promise.all(
-          (uniqueEventIds as string[]).map((eventId: string) =>
+          uniqueEventIds.map((eventId: string) =>
             axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
           )
         );
-        
-        
-        // Create a mapping of eventId to event details with confirmed seats calculation
+
         const eventDetailsMap = eventResponses.reduce((acc, response) => {
           const eventData: Event = response.data;
           acc[eventData._id] = {
             ...eventData,
             confirmedSeats: transactionResponse.data.filter((transaction: Transaction) =>
               transaction.eventId === eventData._id && transaction.payment === 1
-            ).length, // Count confirmed transactions for this event
+            ).length,
           };
           return acc;
         }, {} as { [key: string]: Event });
-        
 
         setEventDetails(eventDetailsMap);
       } catch (error) {
         console.error('Error fetching transactions or events:', error);
+      } finally {
+        setLoading(false);  // Set loading to false when the API call finishes
       }
     };
 
     fetchTransactions();
   }, []);
+
 
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
@@ -102,6 +105,7 @@ const TransactionList = () => {
           setTransactionToConfirm(null);
         } catch (error) {
           console.error('Error confirming transaction:', error);
+          setShowAlert({ message: 'Failed to confirm transaction, please try again.', variant: 'danger' });
         }
       } else {
         setShowAlert({ message: 'Cannot confirm payment: Event seats are full.', variant: 'danger' });
@@ -125,6 +129,7 @@ const TransactionList = () => {
         setTransactionToDelete(null);
       } catch (error) {
         console.error('Error deleting transaction:', error);
+        setShowAlert({ message: 'Failed to delete transaction, please try again.', variant: 'danger' });
       }
     }
   };
@@ -140,9 +145,9 @@ const TransactionList = () => {
       setSelectedTransactions([]);
     } catch (error) {
       console.error('Error deleting transactions:', error);
+      setShowAlert({ message: 'Failed to delete selected transactions, please try again.', variant: 'danger' });
     }
   };
-  
 
   const filteredTransactions = transactions.filter((transaction: Transaction) =>
     transaction.enrolledId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -165,124 +170,104 @@ const TransactionList = () => {
         </Col>
         <Col className="text-end">
           {showAlert && (
-            <Alert variant={showAlert.variant} onClose={() => setShowAlert(null)} dismissible 
-            style={{ position:'absolute', top:'40px', right:'40px' }}>
+            <Alert variant={showAlert.variant} onClose={() => setShowAlert(null)} dismissible
+              style={{ position: 'absolute', top: '40px', right: '40px' }}>
               {showAlert.message}
             </Alert>
           )}
           {selectedTransactions.length > 0 && (
-            <Button variant="danger" className="me-2" onClick={handleBulkDelete}>
-              Delete Selected
+            <Button variant="danger" className="me-2" onClick={handleBulkDelete} disabled={loading}>
+              {loading ? <Spinner animation="border" size="sm" /> : 'Delete Selected'}
             </Button>
           )}
         </Col>
       </Row>
 
-      <Table striped bordered hover responsive variant='dark'>
-        <thead>
-          <tr>
-            <th>
-              <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
-            </th>
-            <th>Sr No</th>
-            <th>Enrolled By</th>
-            <th>Event Name</th>
-            <th>Amount</th>
-            <th>Enrolled Roll Numbers</th>
-            <th>Payment Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+        </div>
+      ) : (
+        <Table striped bordered hover responsive variant="dark">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
+              </th>
+              <th>Sr No</th>
+              <th>Enrolled By</th>
+              <th>Event Name</th>
+              <th>Amount</th>
+              <th>Enrolled Roll Numbers</th>
+              <th>Payment Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
             {filteredTransactions.map((transaction, index) => (
-                <tr key={transaction._id}>
+              <tr key={transaction._id}>
                 <td>
-                    <input type="checkbox" checked={selectedTransactions.includes(transaction._id)}
-                    onChange={() => handleSelectTransaction(transaction._id)}/>
+                  <input type="checkbox" checked={selectedTransactions.includes(transaction._id)}
+                    onChange={() => handleSelectTransaction(transaction._id)} />
                 </td>
                 <td>{index + 1}</td>
-                <td>{transaction.enrolledId}</td>
-                <td>{eventDetails[transaction.eventId]?.eventName}</td>
+                <td>{transaction.teamName || transaction.enrolledId}</td>
+                <td>{eventDetails[transaction.eventId]?.eventName || 'Event Name Unavailable'}</td>
                 <td>{transaction.amount}</td>
                 <td>{transaction.teamMembers?.join(', ')}</td>
-                <td>{transaction.payment}</td>
+                <td>{transaction.payment === 1 ? 'Confirmed' : 'Pending'}</td>
                 <td>
-                    <Button variant="primary" size="sm" className="me-2" 
-                      onClick={() => {
-                        const event = eventDetails[transaction.eventId];
-                        if (event && event.confirmedSeats < event.maxSeats) {
-                          setTransactionToConfirm(transaction);
-                          setShowConfirmModal(true);
-                        } else {
-                          setShowAlert({ message: 'Cannot confirm payment: Event seats are full.', variant: 'danger' });
-                        }
-                      }}
-                    >
-                      Confirm Payment
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => confirmDeleteTransaction(transaction)}>
+                  <Button variant="primary" size="sm" className="me-2"
+                    onClick={() => {
+                      const event = eventDetails[transaction.eventId];
+                      if (event && event.confirmedSeats < event.maxSeats) {
+                        setTransactionToConfirm(transaction);
+                        setShowConfirmModal(true);
+                      } else {
+                        setShowAlert({ message: 'Cannot confirm payment: Event seats are full.', variant: 'danger' });
+                      }
+                    }} disabled={transaction.payment === 1}>
+                    Confirm Payment
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => confirmDeleteTransaction(transaction)}>
                     Delete
-                    </Button>
+                  </Button>
                 </td>
-                </tr>
+              </tr>
             ))}
-        </tbody>
+          </tbody>
+        </Table>
+      )}
 
-      </Table>
-
-      {/* Confirm Transaction Modal */}
-        <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
-        <Modal.Header closeButton style={{ backgroundColor: '#333', color: '#fff' }}>
-            <Modal.Title>Confirm Transaction</Modal.Title>
+      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
+        <Modal.Header closeButton style={{ background: '#333' }}>
+          <Modal.Title>Confirm Payment</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ backgroundColor: '#333', color: '#fff' }}>
-            {transactionToConfirm ? (
-            <>
-                Are you sure you want to confirm the transaction for enrolled ID{' '}
-                <strong>{transactionToConfirm.enrolledId}</strong> for{' '}
-                <strong>{eventDetails[transactionToConfirm.eventId]?.eventName || 'Event Name Unavailable'}</strong>?
-            </>
-            ) : (
-            <p>Loading transaction details...</p>
-            )}
-        </Modal.Body>
-        <Modal.Footer style={{ backgroundColor: '#333' }}>
-            <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
+        <Modal.Body style={{ background: '#333' }}>Are you sure you want to confirm the payment for this transaction?</Modal.Body>
+        <Modal.Footer style={{ background: '#333' }}>
+          <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
             Cancel
-            </Button>
-            <Button variant="success" onClick={confirmTransaction}>
+          </Button>
+          <Button variant="primary" onClick={confirmTransaction}>
             Confirm
-            </Button>
+          </Button>
         </Modal.Footer>
-        </Modal>
+      </Modal>
 
-        {/* Delete Confirmation Modal */}
-        <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
-        <Modal.Header closeButton style={{ backgroundColor: '#333', color: '#fff' }}>
-            <Modal.Title>Confirm Delete</Modal.Title>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+        <Modal.Header closeButton style={{ background: '#333' }}>
+          <Modal.Title>Delete Transaction</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ backgroundColor: '#333', color: '#fff' }}>
-            {transactionToDelete ? (
-            <>
-                Are you sure you want to delete the transaction for enrolled ID{' '}
-                <strong>{transactionToDelete.enrolledId}</strong> related to{' '}
-                <strong>{eventDetails[transactionToDelete.eventId]?.eventName || 'Event Name Unavailable'}</strong>?
-            </>
-            ) : (
-            <p>Loading transaction details...</p>
-            )}
-        </Modal.Body>
-        <Modal.Footer style={{ backgroundColor: '#333' }}>
-            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+        <Modal.Body style={{ background: '#333' }}>Are you sure you want to delete this transaction?</Modal.Body>
+        <Modal.Footer style={{ background: '#333' }}>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
-            </Button>
-            <Button variant="danger" onClick={handleDeleteTransaction}>
+          </Button>
+          <Button variant="danger" onClick={handleDeleteTransaction}>
             Delete
-            </Button>
+          </Button>
         </Modal.Footer>
-        </Modal>
-
-
+      </Modal>
     </Container>
   );
 };

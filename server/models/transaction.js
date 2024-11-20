@@ -15,6 +15,10 @@ const transactionSchema = new Schema({
     type: [String], // Array of team member roll numbers or IDs
     required: true,
   },
+  teamName: {
+    type: String, // New field for team name
+    required: false, // Optional if it's not mandatory for individual events
+  },
   amount: {
     type: Number,
     required: true,

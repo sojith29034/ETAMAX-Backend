@@ -5,12 +5,18 @@ const Transaction = require('../models/transaction');
 // Route to create a new transaction
 router.post('/transactions', async (req, res) => {
   try {
-    const { eventId, enrolledId, teamMembers, amount, payment } = req.body;
+    const { eventId, enrolledId, teamName, teamMembers, amount, payment } = req.body;
+
+    // Validate team name
+    if (teamMembers.length > 1 && !teamName) {
+      return res.status(400).json({ message: 'Team name is required for team events.' });
+    }
 
     // Create a new transaction
     const newTransaction = new Transaction({
       eventId,
       enrolledId,
+      teamName,
       teamMembers,
       amount,
       payment,

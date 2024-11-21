@@ -28,6 +28,16 @@ const Dashboard = () => {
             Transactions
           </Button>
         </Col>
+        <Col md={3} className="mb-3">
+          <Button variant="light" className="w-100" onClick={() => navigate('/admin/attendance')}>
+            Attendance List
+          </Button>
+        </Col>
+        <Col md={3} className="mb-3">
+          <Button variant="danger" className="w-100" onClick={() => navigate('/admin/defaulter')}>
+            Defaulters
+          </Button>
+        </Col>
       </Row>
     </Container>
   );

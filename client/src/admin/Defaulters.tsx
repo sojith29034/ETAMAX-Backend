@@ -19,6 +19,7 @@ type Transaction = {
   enrolledId: string;
   eventId: string;
   payment: number;
+  teamMembers: string[];
 };
 
 const Defaulters = () => {
@@ -62,25 +63,36 @@ const Defaulters = () => {
   const identifyDefaulters = () => {
     return students
       .map(student => {
+        // Find all events the student is part of, including as a team member
         const studentEvents = studentDetails
-          .filter(transaction => transaction.enrolledId === student.rollNumber && transaction.payment === 1)
+          .filter(
+            transaction =>
+              (transaction.enrolledId === student.rollNumber ||
+                (transaction.teamMembers && transaction.teamMembers.includes(student.rollNumber))) &&
+              transaction.payment === 1 // Confirmed transactions only
+          )
           .map(transaction => events.find(event => event._id === transaction.eventId));
-
+  
+        // Check for missing days
         const missingDays = selectedDays.filter(day =>
           !studentEvents.some(event => event && event.eventDay === day)
         );
-
+  
+        // Check for missing categories
         const missingCategories = selectedCategories.filter(category =>
-          !studentEvents.some(event => event && event.eventCategory.charAt(0).toUpperCase() + event.eventCategory.slice(1).toLowerCase() === category)
+          !studentEvents.some(event =>
+            event && event.eventCategory.charAt(0).toUpperCase() + event.eventCategory.slice(1).toLowerCase() === category
+          )
         );
-
+  
         const hasMissing = missingDays.length > 0 || missingCategories.length > 0;
-
+  
         // Only return an object if there are missing days or categories
         return hasMissing ? { student, missingDays, missingCategories } : null;
       })
       .filter((defaulter): defaulter is { student: Student; missingDays: number[]; missingCategories: string[] } => defaulter !== null);
   };
+  
 
   const defaulters = identifyDefaulters();
 

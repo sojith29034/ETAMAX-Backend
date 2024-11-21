@@ -163,7 +163,7 @@ const TransactionList = () => {
         <Col>
           <Form.Control
             type="text"
-            placeholder="Search by enrolled ID"
+            placeholder="Search by enrolled roll number"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

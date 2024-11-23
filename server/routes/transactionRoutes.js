@@ -55,10 +55,15 @@ router.get('/transactions/:id', async (req, res) => {
 // Update a specific transaction by ID
 router.put('/transactions/:id', async (req, res) => {
   try {
-    const updatedTransaction = await Transaction.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const transactionId = req.params.id;
+    const updateData = req.body;
+
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      transactionId,
+      updateData,
+      { new: true, runValidators: true } // Return the updated document and validate
+    );
+    
     if (!updatedTransaction) return res.status(404).json({ message: 'Transaction not found' });
     res.json(updatedTransaction);
   } catch (error) {

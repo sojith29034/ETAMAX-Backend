@@ -90,9 +90,14 @@ const TransactionList = () => {
       const event = eventDetails[transactionToConfirm.eventId];
       if (event && event.confirmedSeats < event.maxSeats) {
         try {
-          await axios.put(`${import.meta.env.VITE_BASE_URL}/api/transactions/${transactionToConfirm._id}`, { payment: 1 });
+          const formattedDate = new Date().toLocaleString();
+          const updatedData = {
+            payment: 1,
+            transactionDate: formattedDate,
+          };
+          await axios.put(`${import.meta.env.VITE_BASE_URL}/api/transactions/${transactionToConfirm._id}`, updatedData);
           setTransactions(transactions.map(transaction =>
-            transaction._id === transactionToConfirm._id ? { ...transaction, payment: 1 } : transaction
+            transaction._id === transactionToConfirm._id ? { ...transaction, payment: 1, transactionDate: formattedDate} : transaction
           ));
           setEventDetails({
             ...eventDetails,
@@ -103,9 +108,10 @@ const TransactionList = () => {
           });
           setShowConfirmModal(false);
           setTransactionToConfirm(null);
+          setShowAlert({ message: 'Transaction confirmed successfully.', variant: 'success' });
         } catch (error) {
           console.error('Error confirming transaction:', error);
-          setShowAlert({ message: 'Failed to confirm transaction, please try again.', variant: 'danger' });
+          setShowAlert({ message: 'Failed to confirm transaction. Please try again.', variant: 'danger' });
         }
       } else {
         setShowAlert({ message: 'Cannot confirm payment: Event seats are full.', variant: 'danger' });
@@ -154,6 +160,44 @@ const TransactionList = () => {
     transaction.teamMembers.some(member => member.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+
+  const exportToCSV = () => {
+    const headers = ['Sr No', 'Enrolled By', 'Event Name', 'Amount', 'Enrolled Roll Numbers', 'Transaction Date', 'Payment Status'];
+    const rows = transactions.map((transaction, index) => {
+
+    // Create a string for the enrolled roll numbers, separating them with a comma
+    let enrolledRollNumbers = '';
+    if (transaction.teamMembers) {
+      enrolledRollNumbers = transaction.teamMembers.reduce((acc, rollNumber, i) => {
+        return acc + (i > 0 ? '; ' : '') + rollNumber;
+      }, '');
+    } else if (transaction.enrolledId) {
+      enrolledRollNumbers = transaction.enrolledId; // For single roll number transactions
+    }
+
+    return [
+      index + 1,
+      transaction.teamName || transaction.enrolledId,
+      eventDetails[transaction.eventId]?.eventName || 'Event Name Unavailable',
+      transaction.amount,
+      enrolledRollNumbers,
+      new Date(transaction.transactionDate).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      transaction.payment === 1 ? 'Confirmed' : 'Pending',
+    ]});
+    
+    const csvContent =
+      [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'transactions.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  
+
+
   return (
     <Container className="mt-4">
       <Row className="align-items-center mb-3">
@@ -167,6 +211,11 @@ const TransactionList = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </Col>
+        <Col>
+          <Button variant="primary" onClick={exportToCSV}>
+            Download CSV
+          </Button>
         </Col>
         <Col className="text-end">
           {showAlert && (
@@ -200,11 +249,16 @@ const TransactionList = () => {
               <th>Amount</th>
               <th>Enrolled Roll Numbers</th>
               <th>Payment Status</th>
+              <th>Transaction Date</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTransactions.map((transaction, index) => (
+            {filteredTransactions.map((transaction, index) => {
+              const transactionDate = new Date(transaction.transactionDate);
+              const istDate = new Date(transactionDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+              const formattedDate = `${("0" + istDate.getDate()).slice(-2)}-${("0" + (istDate.getMonth() + 1)).slice(-2)}-${istDate.getFullYear()}`;
+              return (
               <tr key={transaction._id}>
                 <td>
                   <input type="checkbox" checked={selectedTransactions.includes(transaction._id)}
@@ -216,6 +270,7 @@ const TransactionList = () => {
                 <td>{transaction.amount}</td>
                 <td>{transaction.teamMembers?.join(', ')}</td>
                 <td>{transaction.payment === 1 ? 'Confirmed' : 'Pending'}</td>
+                <td>{formattedDate}</td>
                 <td>
                   <Button variant="primary" size="sm" className="me-2"
                     onClick={() => {
@@ -234,7 +289,7 @@ const TransactionList = () => {
                   </Button>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </Table>
       )}

@@ -37,6 +37,13 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  whatsapp: {
+    type: String,
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const Event = mongoose.model('Event', eventSchema);

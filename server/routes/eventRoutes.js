@@ -5,7 +5,8 @@ const Event = require('../models/event');
 // Route to create a new event
 router.post('/events', async (req, res) => {
   try {
-    const { eventName, eventDetails, entryFees, eventCategory, eventDay, startTime, endTime, maxSeats, teamSize } = req.body;
+    const { eventName, eventDetails, entryFees, eventCategory, eventDay, startTime, endTime, maxSeats, teamSize, whatsapp, isFeatured } = req.body;
+    const parsedIsFeatured = isFeatured === 'on';
 
     // Create a new event
     const newEvent = new Event({
@@ -18,6 +19,8 @@ router.post('/events', async (req, res) => {
       endTime,
       maxSeats,
       teamSize,
+      whatsapp,
+      isFeatured: parsedIsFeatured,
     });
 
     await newEvent.save();

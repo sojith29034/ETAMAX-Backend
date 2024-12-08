@@ -10,7 +10,12 @@ const AddEvent = () => {
   const [show, setShow] = useState(false);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [isFeatured, setIsFeatured] = useState(false);
   const navigate = useNavigate();
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsFeatured(e.target.checked);
+  };
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setIsTeam(event.target.value === 'team');
@@ -42,6 +47,7 @@ const AddEvent = () => {
       setIsTeam(false);
       setStartTime('');
       setEndTime('');
+      setIsFeatured(false);
     } catch (error) {
       console.error('Error creating event:', error);
       setMessage('Failed to add event');
@@ -77,6 +83,12 @@ const AddEvent = () => {
             <Form.Group controlId="entryFees" className="mb-3">
               <Form.Label>Entry Fees</Form.Label>
               <Form.Control type="number" name="entryFees" min={0} placeholder="Enter entry fees" required />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId="maxSeats" className="mb-3">
+              <Form.Label>Max Seats</Form.Label>
+              <Form.Control type="number" name="maxSeats" placeholder="Enter max seats available" required />
             </Form.Group>
           </Col>
           <Col>
@@ -117,32 +129,41 @@ const AddEvent = () => {
                 onChange={(e) => setEndTime(e.target.value)} required />
             </Form.Group>
           </Col>
+          <Col className='d-flex align-items-center justify-content-center'>
+            <Form.Group controlId="isFeatured" className="mb-3">
+              <Form.Check type="checkbox" label="Feature Event?" name="isFeatured" checked={isFeatured} onChange={handleCheckboxChange} />
+            </Form.Group>
+          </Col>
         </Row>
-
+        
         <Row>
           <Col>
-            <Form.Group controlId="maxSeats" className="mb-3">
-              <Form.Label>Max Seats</Form.Label>
-              <Form.Control type="number" name="maxSeats" placeholder="Enter max seats available" required />
-            </Form.Group>
+            <Row>
+              <Col>
+                <Form.Group controlId="individualOrTeam" className="mb-3">
+                  <Form.Label>Participation Type</Form.Label>
+                  <Form.Select name="individualOrTeam" onChange={handleTeamChange} required>
+                    <option value="individual">Individual</option>
+                    <option value="team">Team</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              {isTeam && (
+                <Col>
+                  <Form.Group controlId="teamSize" className="mb-3">
+                    <Form.Label>Team Size</Form.Label>
+                    <Form.Control type="number" name="teamSize" placeholder="Enter max team members" />
+                  </Form.Group>
+                </Col>
+              )}
+            </Row>
           </Col>
           <Col>
-            <Form.Group controlId="individualOrTeam" className="mb-3">
-              <Form.Label>Participation Type</Form.Label>
-              <Form.Select name="individualOrTeam" onChange={handleTeamChange} required>
-                <option value="individual">Individual</option>
-                <option value="team">Team</option>
-              </Form.Select>
+            <Form.Group controlId="whatsapp" className="mb-3">
+              <Form.Label>WhatsApp Group Link</Form.Label>
+              <Form.Control type="text" name="whatsapp" placeholder="Enter WhatsApp Group Link" />
             </Form.Group>
           </Col>
-          {isTeam && (
-            <Col>
-              <Form.Group controlId="teamSize" className="mb-3">
-                <Form.Label>Team Size</Form.Label>
-                <Form.Control type="number" name="teamSize" placeholder="Enter max team members" />
-              </Form.Group>
-            </Col>
-          )}
         </Row>
 
         <div className="d-flex justify-content-center">

@@ -20,7 +20,9 @@ const EditEvent = () => {
     endTime: string;
     maxSeats: number;
     individualOrTeam: string;
-    teamSize: number | undefined;  // Adjust type to allow number or undefined
+    teamSize: number | undefined;
+    isFeatured: boolean;
+    whatsapp: string;
   }>({
     eventName: '',
     eventDetails: '',
@@ -32,6 +34,8 @@ const EditEvent = () => {
     maxSeats: 0,
     individualOrTeam: 'individual',
     teamSize: undefined,
+    isFeatured: false,
+    whatsapp: '',
   });
   
 
@@ -53,25 +57,35 @@ const EditEvent = () => {
     fetchEvent();
   }, [eventId]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: name === 'entryFees' || name === 'maxSeats' ? Number(value) : value,
-        }));
-        
-        // Handle `individualOrTeam` and adjust `teamSize` based on its value
-        if (name === 'individualOrTeam') {
-            const isTeamSelected = value === 'team';
-            setIsTeam(isTeamSelected);
-      
-            setFormData((prevData) => ({
-              ...prevData,
-              teamSize: isTeamSelected ? prevData.teamSize || 2 : 1,  // Default team size to 2 if undefined
-            }));
-        }
-    };
+  
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      isFeatured: checked,
+    }));
+  };
+  
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: name === 'entryFees' || name === 'maxSeats' ? Number(value) : value,
+    }));
+    
+    // Handle `individualOrTeam` and adjust `teamSize` based on its value
+    if (name === 'individualOrTeam') {
+      const isTeamSelected = value === 'team';
+      setIsTeam(isTeamSelected);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        teamSize: isTeamSelected ? prevData.teamSize || 2 : 1,  // Default team size to 2 if undefined
+      }));
+    }
+  };
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,6 +153,18 @@ const EditEvent = () => {
             </Form.Group>
           </Col>
           <Col>
+            <Form.Group controlId="maxSeats" className="mb-3">
+              <Form.Label>Max Seats</Form.Label>
+              <Form.Control
+                type="number"
+                name="maxSeats"
+                value={formData.maxSeats}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col>
             <Form.Group controlId="eventCategory" className="mb-3">
               <Form.Label>Category</Form.Label>
               <Form.Select name="eventCategory" value={formData.eventCategory} onChange={handleChange} required>
@@ -188,44 +214,52 @@ const EditEvent = () => {
               />
             </Form.Group>
           </Col>
+          <Col className='d-flex align-items-center justify-content-center'>
+            <Form.Group controlId="isFeatured" className="mb-3">
+              <Form.Check type="checkbox" label="Feature Event?" name="isFeatured" checked={formData.isFeatured} onChange={handleCheckboxChange} />
+            </Form.Group>
+          </Col>
         </Row>
 
         <Row>
           <Col>
-            <Form.Group controlId="maxSeats" className="mb-3">
-              <Form.Label>Max Seats</Form.Label>
+            <Row>
+              <Col>
+                <Form.Group controlId="individualOrTeam" className="mb-3">
+                  <Form.Label>Participation Type</Form.Label>
+                  <Form.Select name="individualOrTeam" value={formData.individualOrTeam} onChange={handleChange} required>
+                    <option value="individual">Individual</option>
+                    <option value="team">Team</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              {isTeam && (
+                <Col>
+                  <Form.Group controlId="teamSize" className="mb-3">
+                    <Form.Label>Team Size</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="teamSize"
+                      value={formData.teamSize || ''}
+                      onChange={handleChange}
+                      placeholder="Enter max team members"
+                    />
+                  </Form.Group>
+                </Col>
+              )}
+            </Row>
+          </Col>
+          <Col>
+            <Form.Group controlId="whatsapp" className="mb-3">
+              <Form.Label>WhatsApp Group Link</Form.Label>
               <Form.Control
-                type="number"
-                name="maxSeats"
-                value={formData.maxSeats}
+                type="text"
+                name="whatsapp"
+                value={formData.whatsapp}
                 onChange={handleChange}
-                required
               />
             </Form.Group>
           </Col>
-          <Col>
-            <Form.Group controlId="individualOrTeam" className="mb-3">
-              <Form.Label>Participation Type</Form.Label>
-              <Form.Select name="individualOrTeam" value={formData.individualOrTeam} onChange={handleChange} required>
-                <option value="individual">Individual</option>
-                <option value="team">Team</option>
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          {isTeam && (
-            <Col>
-              <Form.Group controlId="teamSize" className="mb-3">
-                <Form.Label>Team Size</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="teamSize"
-                  value={formData.teamSize || ''}
-                  onChange={handleChange}
-                  placeholder="Enter max team members"
-                />
-              </Form.Group>
-            </Col>
-          )}
         </Row>
 
         <div className="d-flex justify-content-center">

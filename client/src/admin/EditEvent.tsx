@@ -23,6 +23,7 @@ const EditEvent = () => {
     teamSize: number | undefined;
     isFeatured: boolean;
     whatsapp: string;
+    dept: number;
   }>({
     eventName: '',
     eventDetails: '',
@@ -36,6 +37,7 @@ const EditEvent = () => {
     teamSize: undefined,
     isFeatured: false,
     whatsapp: '',
+    dept: 0,
   });
   
 
@@ -258,6 +260,19 @@ const EditEvent = () => {
                 value={formData.whatsapp}
                 onChange={handleChange}
               />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId="dept" className="mb-3">
+              <Form.Label>Category</Form.Label>
+              <Form.Select name="dept" value={formData.dept} onChange={handleChange} required>
+                <option value="0">For All</option>
+                <option value="1">Computer Science</option>
+                <option value="2">Mechanical</option>
+                <option value="3">EXTC</option>
+                <option value="4">Electrical</option>
+                <option value="5">Information Technology</option>
+              </Form.Select>
             </Form.Group>
           </Col>
         </Row>

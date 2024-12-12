@@ -10,6 +10,7 @@ const AddEvent = () => {
   const [show, setShow] = useState(false);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [selectedDept, setSelectedDept] = useState("0");
   const [isFeatured, setIsFeatured] = useState(false);
   const navigate = useNavigate();
 
@@ -19,6 +20,10 @@ const AddEvent = () => {
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setIsTeam(event.target.value === 'team');
+  };
+
+  const handleDeptChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDept(event.target.value); // Update state with selected value
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -152,7 +157,7 @@ const AddEvent = () => {
                 <Col>
                   <Form.Group controlId="teamSize" className="mb-3">
                     <Form.Label>Team Size</Form.Label>
-                    <Form.Control type="number" name="teamSize" placeholder="Enter max team members" />
+                    <Form.Control type="number" name="teamSize" placeholder="Enter team size" />
                   </Form.Group>
                 </Col>
               )}
@@ -162,6 +167,19 @@ const AddEvent = () => {
             <Form.Group controlId="whatsapp" className="mb-3">
               <Form.Label>WhatsApp Group Link</Form.Label>
               <Form.Control type="text" name="whatsapp" placeholder="Enter WhatsApp Group Link" />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId="dept" className="mb-3">
+              <Form.Label>Eligible Department</Form.Label>
+              <Form.Select name="dept" value={selectedDept} onChange={handleDeptChange} required>
+                <option value="0">For All</option>
+                <option value="1">Computer Science</option>
+                <option value="2">Mechanical</option>
+                <option value="3">EXTC</option>
+                <option value="4">Electrical</option>
+                <option value="5">Information Technology</option>
+              </Form.Select>
             </Form.Group>
           </Col>
         </Row>

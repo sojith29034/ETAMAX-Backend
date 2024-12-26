@@ -10,8 +10,10 @@ const EditEvent = () => {
   const [message, setMessage] = useState('');
   const [variant, setVariant] = useState('');
   const [show, setShow] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
     eventName: string;
+    eventBanner: string;
     eventDetails: string;
     entryFees: number;
     eventCategory: string;
@@ -26,6 +28,7 @@ const EditEvent = () => {
     dept: number;
   }>({
     eventName: '',
+    eventBanner: '',
     eventDetails: '',
     entryFees: 0,
     eventCategory: '',
@@ -89,6 +92,19 @@ const EditEvent = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setPreview(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,28 +133,54 @@ const EditEvent = () => {
         </Alert>
       )}
       <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="eventName" className="mb-3">
-          <Form.Label>Event Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="eventName"
-            value={formData.eventName}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+        <Row>
+          <Col>
+            <Form.Group controlId="eventName" className="mb-3">
+              <Form.Label>Event Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="eventName"
+                value={formData.eventName}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId="eventBanner" className="mb-3">
+              <Form.Label>Event Banner</Form.Label>
+              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} required />
+            </Form.Group>
+          </Col>
+        </Row>
 
-        <Form.Group controlId="eventDetails" className="mb-3">
-          <Form.Label>Details</Form.Label>
-          <Form.Control
-            as="textarea"
-            name="eventDetails"
-            rows={3}
-            value={formData.eventDetails}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+        <Row>
+          <Col md={10}>
+            <Form.Group controlId="eventDetails" className="mb-3">
+              <Form.Label>Details</Form.Label>
+              <Form.Control
+                as="textarea"
+                name="eventDetails"
+                rows={3}
+                value={formData.eventDetails}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={1}>
+            <Form.Label>Banner</Form.Label>
+            <img src={`${import.meta.env.VITE_BASE_URL}/${formData.eventBanner}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+          </Col>
+          <Col md={1}>
+            <Form.Label>Preview</Form.Label>
+            {preview ? (
+              <img src={preview} alt="Preview" style={{ width: '100%', height: 'auto' }} />
+            ) : (
+              <p>No banner uploaded</p>
+            )}
+          </Col>
+        </Row>
 
         <Row>
           <Col>

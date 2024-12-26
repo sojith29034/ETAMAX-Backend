@@ -1,16 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const Event = require('../models/event');
+const multer = require('multer');
+
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'assets/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  },
+});
+const upload = multer({ storage });
+
 
 // Route to create a new event
-router.post('/events', async (req, res) => {
+router.post('/events', upload.single('eventBanner'), async (req, res) => {
   try {
     const { eventName, eventDetails, entryFees, eventCategory, eventDay, startTime, endTime, maxSeats, teamSize, whatsapp, isFeatured, dept } = req.body;
     const parsedIsFeatured = isFeatured === 'on';
+    
+    // Save eventBanner as the file path
+    const eventBanner = req.file ? req.file.path : null;
 
     // Create a new event
     const newEvent = new Event({
       eventName,
+      eventBanner,
       eventDetails,
       entryFees,
       eventCategory,
@@ -88,14 +106,44 @@ router.get('/events/:id', async (req, res) => {
 // Update a specific event by ID
 router.put('/events/:id', async (req, res) => {
   try {
+    // Validate allowed fields
+    const allowedUpdates = [
+      'eventName',
+      'eventDetails',
+      'entryFees',
+      'eventCategory',
+      'eventDay',
+      'startTime',
+      'endTime',
+      'maxSeats',
+      'teamSize',
+      'whatsapp',
+      'isFeatured',
+      'dept',
+      'eventBanner',
+    ];
+
+    const updates = Object.keys(req.body);
+    const isValidOperation = updates.every((key) => allowedUpdates.includes(key));
+
+    if (!isValidOperation) {
+      return res.status(400).json({ message: 'Invalid updates!' });
+    }
+
+    // Update the event
     const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
-    if (!updatedEvent) return res.status(404).json({ message: 'Event not found' });
-    res.json(updatedEvent);
+
+    if (!updatedEvent) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    res.status(200).json(updatedEvent);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error updating event:', error);
+    res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 });
 

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AddEvent = () => {
@@ -12,7 +11,7 @@ const AddEvent = () => {
   const [endTime, setEndTime] = useState('');
   const [selectedDept, setSelectedDept] = useState("0");
   const [isFeatured, setIsFeatured] = useState(false);
-  const navigate = useNavigate();
+  const [preview, setPreview] = useState<string | null>(null);
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsFeatured(e.target.checked);
@@ -23,7 +22,20 @@ const AddEvent = () => {
   };
 
   const handleDeptChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDept(event.target.value); // Update state with selected value
+    setSelectedDept(event.target.value);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setPreview(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -41,7 +53,11 @@ const AddEvent = () => {
     const formData = new FormData(event.target as HTMLFormElement);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/events`, Object.fromEntries(formData));
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/events`, Object.fromEntries(formData), {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       // console.log('Event created successfully:', response.data);
       setMessage(`${response.data.eventName} added successfully`);
       setVariant('success');
@@ -63,9 +79,6 @@ const AddEvent = () => {
 
   return (
     <Container className="my-4">
-      <Button variant="success" onClick={() => navigate('/admin')} className='d-none'>
-        Event List
-      </Button>
       <h2 className='text-center'>Add Event</h2>
       {show &&
         <Alert variant={variant} onClose={() => setShow(false)} dismissible>
@@ -73,15 +86,37 @@ const AddEvent = () => {
         </Alert>
       }
       <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="eventName" className="mb-3">
-          <Form.Label>Event Name</Form.Label>
-          <Form.Control type="text" name="eventName" placeholder="Enter event name" required />
-        </Form.Group>
+        <Row>
+          <Col>
+            <Form.Group controlId="eventName" className="mb-3">
+              <Form.Label>Event Name</Form.Label>
+              <Form.Control type="text" name="eventName" placeholder="Enter event name" required />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId="eventBanner" className="mb-3">
+              <Form.Label>Event Banner</Form.Label>
+              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} required />
+            </Form.Group>
+          </Col>
+        </Row>
 
-        <Form.Group controlId="eventDetails" className="mb-3">
-          <Form.Label>Details</Form.Label>
-          <Form.Control as="textarea" name="eventDetails" rows={3} placeholder="Enter event details" required />
-        </Form.Group>
+        <Row>
+          <Col md={11}>
+            <Form.Group controlId="eventDetails" className="mb-3">
+              <Form.Label>Details</Form.Label>
+              <Form.Control as="textarea" name="eventDetails" rows={3} placeholder="Enter event details" required />
+            </Form.Group>
+          </Col>
+          <Col md={1}>
+            <Form.Label>Preview</Form.Label>
+            {preview ? (
+              <img src={preview} alt="Preview" style={{ width: '100%', height: 'auto' }} />
+            ) : (
+              <p>No banner uploaded</p>
+            )}
+          </Col>
+        </Row>
 
         <Row>
           <Col>

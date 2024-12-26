@@ -16,6 +16,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/assets', express.static('assets'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL)

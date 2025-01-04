@@ -109,7 +109,13 @@ const EditEvent = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`, formData);
+      console.log(formData);
+      const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+      console.log(response.data);
       setMessage('Event updated successfully');
       setVariant('success');
       setShow(true);
@@ -149,7 +155,7 @@ const EditEvent = () => {
           <Col>
             <Form.Group controlId="eventBanner" className="mb-3">
               <Form.Label>Event Banner</Form.Label>
-              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} required />
+              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} />
             </Form.Group>
           </Col>
         </Row>

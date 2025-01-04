@@ -7,7 +7,6 @@ const eventSchema = new mongoose.Schema({
   },
   eventBanner: {
     type: String,
-    required: true,
   },
   eventDetails: {
     type: String,
@@ -52,7 +51,8 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   }
-});
+}, { strict: false }
+);
 
 const Event = mongoose.model('Event', eventSchema);
 module.exports = Event;

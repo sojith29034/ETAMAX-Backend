@@ -126,6 +126,12 @@ router.put('/events/:id', async (req, res) => {
     const updates = Object.keys(req.body);
     const isValidOperation = updates.every((key) => allowedUpdates.includes(key));
 
+    console.log("Event ID:", req.params.id);
+    console.log("Request Body:", req.body);
+    console.log("Allowed Updates:", updates.every((key) => allowedUpdates.includes(key)));
+    console.log("Updates Attempted:", req.body);
+    console.log("Allowed Fields Validation:", isValidOperation);
+
     if (!isValidOperation) {
       return res.status(400).json({ message: 'Invalid updates!' });
     }

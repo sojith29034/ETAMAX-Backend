@@ -104,40 +104,15 @@ router.get('/events/:id', async (req, res) => {
 });
 
 // Update a specific event by ID
-router.put('/events/:id', async (req, res) => {
+router.put('/events/:id', upload.single('eventBanner'), async (req, res) => {
   try {
-    // Validate allowed fields
-    const allowedUpdates = [
-      'eventName',
-      'eventDetails',
-      'entryFees',
-      'eventCategory',
-      'eventDay',
-      'startTime',
-      'endTime',
-      'maxSeats',
-      'teamSize',
-      'whatsapp',
-      'isFeatured',
-      'dept',
-      'eventBanner',
-    ];
+    const updateData = { ...req.body };
 
-    const updates = req.body;
-    // const isValidOperation = updates.every((key) => allowedUpdates.includes(key));
+    if (req.file) {
+      updateData.eventBanner = req.file.path;
+    }
 
-    console.log("Event ID:", req.params.id);
-    console.log("Request Body:", req.body);
-    // console.log("Allowed Updates:", updates.every((key) => allowedUpdates.includes(key)));
-    console.log("Updates Attempted:", req.body);
-    // console.log("Allowed Fields Validation:", isValidOperation);
-
-    // if (!isValidOperation) {
-    //   return res.status(400).json({ message: 'Invalid updates!' });
-    // }
-
-    // Update the event
-    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, {
+    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });

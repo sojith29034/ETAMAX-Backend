@@ -15,7 +15,7 @@ const EditEvent = () => {
   const [loading, setLoading] = useState(true); // Loading state for async operation
   const [formData, setFormData] = useState<{
     eventName: string;
-    eventBanner: string;
+    eventBanner: string | File;
     eventDetails: string;
     entryFees: number;
     eventCategory: string;
@@ -101,14 +101,46 @@ const EditEvent = () => {
         }
       };
       reader.readAsDataURL(file);
+  
+      setFormData((prevData) => ({
+        ...prevData,
+        eventBanner: file,
+      }));
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+  
+    const formDataToSubmit = new FormData();
+    formDataToSubmit.append('eventName', formData.eventName);
+    formDataToSubmit.append('eventDetails', formData.eventDetails);
+    formDataToSubmit.append('entryFees', String(formData.entryFees));
+    formDataToSubmit.append('eventCategory', formData.eventCategory);
+    formDataToSubmit.append('eventDay', formData.eventDay);
+    formDataToSubmit.append('startTime', formData.startTime);
+    formDataToSubmit.append('endTime', formData.endTime);
+    formDataToSubmit.append('maxSeats', String(formData.maxSeats));
+    formDataToSubmit.append('individualOrTeam', formData.individualOrTeam);
+    formDataToSubmit.append('teamSize', String(formData.teamSize || 0));
+    formDataToSubmit.append('isFeatured', String(formData.isFeatured));
+    formDataToSubmit.append('whatsapp', formData.whatsapp);
+    formDataToSubmit.append('dept', String(formData.dept));
+  
+    if (formData.eventBanner instanceof File) {
+      formDataToSubmit.append('eventBanner', formData.eventBanner);
+    }
+  
     try {
-      console.log(formData);
-      const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`, formData);
+      console.log('Submitting:', formDataToSubmit);
+  
+      const response = await axios.put(
+        `${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`,
+        formDataToSubmit,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
+  
       console.log(response.data);
       setMessage('Event updated successfully');
       setVariant('success');
@@ -122,7 +154,7 @@ const EditEvent = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>; // Add a loading spinner or message
+    return <div>Loading...</div>;
   }
 
   return (
@@ -159,7 +191,7 @@ const EditEvent = () => {
         </Row>
 
         <Row>
-          <Col md={10}>
+          <Col md={11}>
             <Form.Group controlId="eventDetails" className="mb-3">
               <Form.Label>Details</Form.Label>
               <Form.Control
@@ -174,14 +206,18 @@ const EditEvent = () => {
           </Col>
           <Col md={1}>
             <Form.Label>Banner</Form.Label>
-            {formData.eventBanner && (
-              <img src={`${import.meta.env.VITE_BASE_URL}/${formData.eventBanner}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
-            )}
-          </Col>
-          <Col md={1}>
-            <Form.Label>Preview</Form.Label>
             {preview ? (
-              <img src={preview} alt="Preview" style={{ width: '100%', height: 'auto' }} />
+              <img
+                src={preview}
+                alt="Preview"
+                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+              />
+            ) : formData.eventBanner ? (
+              <img
+                src={`${import.meta.env.VITE_BASE_URL}/${formData.eventBanner}`}
+                alt="Uploaded Banner"
+                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+              />
             ) : (
               <p>No banner uploaded</p>
             )}

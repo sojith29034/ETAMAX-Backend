@@ -6,11 +6,13 @@ import axios from 'axios';
 const EditEvent = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
+  
   const [isTeam, setIsTeam] = useState(false);
   const [message, setMessage] = useState('');
   const [variant, setVariant] = useState('');
   const [show, setShow] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Loading state for async operation
   const [formData, setFormData] = useState<{
     eventName: string;
     eventBanner: string;
@@ -42,7 +44,6 @@ const EditEvent = () => {
     whatsapp: '',
     dept: 0,
   });
-  
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -50,19 +51,20 @@ const EditEvent = () => {
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`);
         const data = response.data;
         setFormData({
-            ...data,
-            individualOrTeam: data.teamSize > 1 ? 'team' : 'individual',
-            teamSize: data.teamSize,
+          ...data,
+          individualOrTeam: data.teamSize > 1 ? 'team' : 'individual',
+          teamSize: data.teamSize,
         });
         setIsTeam(data.teamSize > 1);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching event data:', error);
+        setLoading(false);
       }
     };
     fetchEvent();
   }, [eventId]);
 
-  
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
     setFormData((prevData) => ({
@@ -70,7 +72,6 @@ const EditEvent = () => {
       isFeatured: checked,
     }));
   };
-  
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -80,14 +81,12 @@ const EditEvent = () => {
       [name]: name === 'entryFees' || name === 'maxSeats' ? Number(value) : value,
     }));
     
-    // Handle `individualOrTeam` and adjust `teamSize` based on its value
     if (name === 'individualOrTeam') {
       const isTeamSelected = value === 'team';
       setIsTeam(isTeamSelected);
-
       setFormData((prevData) => ({
         ...prevData,
-        teamSize: isTeamSelected ? prevData.teamSize || 2 : 1,  // Default team size to 2 if undefined
+        teamSize: isTeamSelected ? prevData.teamSize || 2 : 1,
       }));
     }
   };
@@ -105,16 +104,11 @@ const EditEvent = () => {
     }
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       console.log(formData);
-      const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
+      const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`, formData);
       console.log(response.data);
       setMessage('Event updated successfully');
       setVariant('success');
@@ -126,6 +120,10 @@ const EditEvent = () => {
       setShow(true);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Add a loading spinner or message
+  }
 
   return (
     <Container className="my-4">
@@ -176,7 +174,9 @@ const EditEvent = () => {
           </Col>
           <Col md={1}>
             <Form.Label>Banner</Form.Label>
-            <img src={`${import.meta.env.VITE_BASE_URL}/${formData.eventBanner}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+            {formData.eventBanner && (
+              <img src={`${import.meta.env.VITE_BASE_URL}/${formData.eventBanner}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+            )}
           </Col>
           <Col md={1}>
             <Form.Label>Preview</Form.Label>
@@ -293,6 +293,7 @@ const EditEvent = () => {
                       value={formData.teamSize || ''}
                       onChange={handleChange}
                       placeholder="Enter max team members"
+                      required={isTeam}
                     />
                   </Form.Group>
                 </Col>
@@ -312,7 +313,7 @@ const EditEvent = () => {
           </Col>
           <Col>
             <Form.Group controlId="dept" className="mb-3">
-              <Form.Label>Category</Form.Label>
+              <Form.Label>Department</Form.Label>
               <Form.Select name="dept" value={formData.dept} onChange={handleChange} required>
                 <option value="0">For All</option>
                 <option value="1">Computer Science</option>

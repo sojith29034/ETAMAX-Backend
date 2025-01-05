@@ -123,18 +123,18 @@ router.put('/events/:id', async (req, res) => {
       'eventBanner',
     ];
 
-    const updates = Object.keys(req.body);
-    const isValidOperation = updates.every((key) => allowedUpdates.includes(key));
+    const updates = req.body;
+    // const isValidOperation = updates.every((key) => allowedUpdates.includes(key));
 
     console.log("Event ID:", req.params.id);
     console.log("Request Body:", req.body);
-    console.log("Allowed Updates:", updates.every((key) => allowedUpdates.includes(key)));
+    // console.log("Allowed Updates:", updates.every((key) => allowedUpdates.includes(key)));
     console.log("Updates Attempted:", req.body);
-    console.log("Allowed Fields Validation:", isValidOperation);
+    // console.log("Allowed Fields Validation:", isValidOperation);
 
-    if (!isValidOperation) {
-      return res.status(400).json({ message: 'Invalid updates!' });
-    }
+    // if (!isValidOperation) {
+    //   return res.status(400).json({ message: 'Invalid updates!' });
+    // }
 
     // Update the event
     const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, {

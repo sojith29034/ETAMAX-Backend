@@ -4,8 +4,13 @@ import { useNavigate } from 'react-router-dom';
 const Sidebar = () => {
   const navigate = useNavigate();
 
+  const logout = () => {
+    localStorage.setItem('isAdminLoggedIn', 'false');
+    navigate('/login');
+  };
+
   return (
-    <div style={{ width: '250px', height: '100vh', backgroundColor: '#333', padding: '20px' }}>
+    <div style={{ width: '250px', height: '100vh', backgroundColor: '#333', padding: '20px', justifyContent: 'space-between' }}>
       <Nav className="flex-column">
         <Nav.Link onClick={() => navigate('/admin')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
           Home
@@ -28,6 +33,10 @@ const Sidebar = () => {
         <Nav.Link onClick={() => navigate('/admin/defaulter')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
           Defaulters
         </Nav.Link>
+      </Nav>
+
+      <Nav>
+        <Nav.Link onClick={logout} style={{ cursor: 'pointer', color: '#ccc', fontSize: '24px'}}>Logout</Nav.Link>
       </Nav>
     </div>
   );

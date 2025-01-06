@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -22,11 +22,19 @@ function App() {
   };
 
   // State to track admin login status
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    const savedStatus = localStorage.getItem('isAdminLoggedIn');
+    return savedStatus === 'true';
+  });
+
+  useEffect(() => {
+    console.log('Saving Admin Login Status:', isAdminLoggedIn);
+    localStorage.setItem('isAdminLoggedIn', isAdminLoggedIn.toString());
+  }, [isAdminLoggedIn]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/students`, formData);
 

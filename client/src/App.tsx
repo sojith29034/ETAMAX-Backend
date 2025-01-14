@@ -64,71 +64,75 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            <div className="container mt-5">
-              <h2 className="text-center mb-4">Student Registration Form</h2>
-              {isLoading ? (
-                <div className="text-center">
-                  <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Name:</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="name"
-                      name="name"
-                      placeholder="Enter your name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+          element={isAdminLoggedIn ? <Admin /> : <Navigate to="/login" />}
+          // element={
+          //   <div className="container mt-5">
+          //     <h2 className="text-center mb-4">Student Registration Form</h2>
+          //     {isLoading ? (
+          //       <div className="text-center">
+          //         <div className="spinner-border text-primary" role="status">
+          //           <span className="visually-hidden">Loading...</span>
+          //         </div>
+          //       </div>
+          //     ) : (
+          //       <form onSubmit={handleSubmit}>
+          //         <div className="mb-3">
+          //           <label htmlFor="name" className="form-label">Name:</label>
+          //           <input
+          //             type="text"
+          //             className="form-control"
+          //             id="name"
+          //             name="name"
+          //             placeholder="Enter your name"
+          //             value={formData.name}
+          //             onChange={handleChange}
+          //             required
+          //           />
+          //         </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="rollNumber" className="form-label">Roll Number:</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="rollNumber"
-                      name="rollNumber"
-                      placeholder="Enter your roll number"
-                      value={formData.rollNumber}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+          //         <div className="mb-3">
+          //           <label htmlFor="rollNumber" className="form-label">Roll Number:</label>
+          //           <input
+          //             type="text"
+          //             className="form-control"
+          //             id="rollNumber"
+          //             name="rollNumber"
+          //             placeholder="Enter your roll number"
+          //             value={formData.rollNumber}
+          //             onChange={handleChange}
+          //             required
+          //           />
+          //         </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email:</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="email"
-                      name="email"
-                      placeholder="Enter your email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+          //         <div className="mb-3">
+          //           <label htmlFor="email" className="form-label">Email:</label>
+          //           <input
+          //             type="email"
+          //             className="form-control"
+          //             id="email"
+          //             name="email"
+          //             placeholder="Enter your email"
+          //             value={formData.email}
+          //             onChange={handleChange}
+          //             required
+          //           />
+          //         </div>
 
-                  <div className="text-center">
-                    <button type="submit" className="btn btn-primary">
-                      Submit
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          }
+          //         <div className="text-center">
+          //           <button type="submit" className="btn btn-primary">
+          //             Submit
+          //           </button>
+          //         </div>
+          //       </form>
+          //     )}
+          //   </div>
+          // }
         />
 
-        <Route path="/login" element={<Login onLogin={() => setIsAdminLoggedIn(true)} />} />
+        <Route
+          path="/login"
+          element={<Login onLogin={() => setIsAdminLoggedIn(true)} />}
+        />
         <Route
           path="/admin/*"
           element={isAdminLoggedIn ? <Admin /> : <Navigate to="/login" />}

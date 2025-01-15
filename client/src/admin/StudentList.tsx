@@ -24,7 +24,7 @@ function StudentList() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/students`);
+        const response = await axios.get<Student[]>(`${import.meta.env.VITE_BASE_URL}/api/students`);
         setStudents(response.data);
         setLoading(false);
       } catch (error) {
@@ -44,11 +44,14 @@ function StudentList() {
   const handleSave = async () => {
     if (editedStudent) {
       try {
-        const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/students/${editedStudent._id}`, {
-          name: editedStudent.name,
-          rollNumber: editedStudent.rollNumber,
-          email: editedStudent.email,
-        });
+        const response = await axios.put<{ student: Student }>(
+          `${import.meta.env.VITE_BASE_URL}/api/students/${editedStudent._id}`,
+          {
+            name: editedStudent.name,
+            rollNumber: editedStudent.rollNumber,
+            email: editedStudent.email,
+          }
+        );
 
         setStudents(students.map((s) => (s._id === editedStudent._id ? response.data.student : s)));
         setEditingId(null);

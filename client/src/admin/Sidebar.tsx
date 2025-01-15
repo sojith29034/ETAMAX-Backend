@@ -10,7 +10,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div style={{ width: '250px', height: '100vh', backgroundColor: '#333', padding: '20px', justifyContent: 'space-between' }}>
+    <div style={{ width: '250px', height: '100vh', backgroundColor: '#333', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'fixed'}}>
       <Nav className="flex-column">
         <Nav.Link onClick={() => navigate('/admin')} style={{ cursor: 'pointer' , color: '#ccc', fontSize: '24px'}}>
           Home

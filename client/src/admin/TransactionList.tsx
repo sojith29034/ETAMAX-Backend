@@ -57,7 +57,11 @@ const TransactionList = () => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
+<<<<<<< HEAD
       setLoading(true); // Set loading to true when starting the API call
+=======
+      setLoading(true);
+>>>>>>> admin-routing-update
       try {
         const transactionResponse = await axios.get<Transaction[]>(
           `${import.meta.env.VITE_BASE_URL}/api/transactions`
@@ -71,11 +75,12 @@ const TransactionList = () => {
 
         const eventResponses = await Promise.all(
           uniqueEventIds.map((eventId: string) =>
-            axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
+            axios.get<Event>(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
           )
         );
 
         const eventDetailsMap = eventResponses.reduce((acc, response) => {
+<<<<<<< HEAD
           const eventData: Event = response.data as Event;
           acc[eventData._id] = {
             ...eventData,
@@ -84,6 +89,17 @@ const TransactionList = () => {
                 transaction.eventId === eventData._id &&
                 transaction.payment === 1
             ).length,
+=======
+          const eventData: Event = response.data;
+          const confirmedSeats = transactions.filter(
+            (transaction: Transaction) =>
+              transaction.eventId === eventData._id && transaction.payment === 1
+          ).length;
+
+          acc[eventData._id] = {
+            ...eventData,
+            confirmedSeats,
+>>>>>>> admin-routing-update
           };
           return acc;
         }, {} as { [key: string]: Event });
@@ -97,7 +113,7 @@ const TransactionList = () => {
     };
 
     fetchTransactions();
-  }, []);
+  }, [transactions]);
 
   const handleSelectAll = () => {
     setSelectAll(!selectAll);

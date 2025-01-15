@@ -37,7 +37,9 @@ const Attendance = () => {
         const eventsResponse = await axios.get<Event[]>(`${import.meta.env.VITE_BASE_URL}/api/events`);
         setEvents(eventsResponse.data);
 
-        const studentsResponse = await axios.get<Student[]>(`${import.meta.env.VITE_BASE_URL}/api/students`);
+        const studentsResponse = await axios.get<Student[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/students`
+        );
         setStudents(studentsResponse.data);
 
         const transactionsResponse = await axios.get<Transaction[]>(

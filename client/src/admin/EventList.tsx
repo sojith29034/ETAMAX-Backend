@@ -16,6 +16,10 @@ interface Event {
 }
 
 interface Transaction {
+<<<<<<< HEAD
+=======
+  _id: string;
+>>>>>>> admin-routing-update
   eventId: string;
   payment: number;
 }
@@ -42,9 +46,13 @@ const EventList = () => {
         setEvents(eventsResponse.data);
 
         // Fetch transactions
+<<<<<<< HEAD
         const transactionsResponse = await axios.get<Transaction[]>(
           `${import.meta.env.VITE_BASE_URL}/api/transactions`
         );
+=======
+        const transactionsResponse = await axios.get<Transaction[]>(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
+>>>>>>> admin-routing-update
         const transactions = transactionsResponse.data;
 
         // Calculate filled seats for each event

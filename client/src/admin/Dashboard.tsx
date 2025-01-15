@@ -12,9 +12,11 @@ interface Event {
 }
 
 interface Transaction {
+  _id: string;
   eventId: string;
   payment: number;
 }
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -27,23 +29,19 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchEventsAndTransactions = async () => {
       try {
-        // Fetch events
         const eventsResponse = await axios.get<Event[]>(
           `${import.meta.env.VITE_BASE_URL}/api/events`
         );
         setEvents(eventsResponse.data);
 
         // Fetch transactions
-        const transactionsResponse = await axios.get<Transaction[]>(
-          `${import.meta.env.VITE_BASE_URL}/api/transactions`
-        );
-        const fetchedTransactions = transactionsResponse.data;
-        setTransactions(fetchedTransactions);
+        const transactionsResponse = await axios.get<Transaction[]>(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
+        const transactions = transactionsResponse.data;
 
         // Calculate filled seats for each event
         const filledSeatsCount = eventsResponse.data.reduce(
           (acc: { [key: string]: number }, event: Event) => {
-            acc[event._id] = fetchedTransactions.filter(
+            acc[event._id] = transactions.filter(
               (transaction: Transaction) =>
                 transaction.eventId === event._id && transaction.payment === 1
             ).length;
@@ -53,6 +51,24 @@ const Dashboard = () => {
         );
 
         setFilledSeats(filledSeatsCount);
+      } catch (error) {
+        console.error('Error fetching events or transactions:', error);
+      }
+    };
+
+    fetchEventsAndSeats();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const transactionResponse = await axios.get<Transaction[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/transactions`
+        );
+        const fetchedTransactions = transactionResponse.data;
+
+        setTransactions(fetchedTransactions);
 
         // Calculate the total successful transactions
         const successTransactions = fetchedTransactions.filter(

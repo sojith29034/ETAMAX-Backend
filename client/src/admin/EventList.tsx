@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Container, Row, Col, Form, Modal } from 'react-bootstrap';
+import { Table, Button, Container, Row, Col, Form, Modal, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 
 interface Event {
   _id: string;
@@ -14,6 +15,11 @@ interface Event {
   entryFees: number;
 }
 
+interface Transaction {
+  eventId: string;
+  payment: number;
+}
+
 const EventList = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
@@ -24,20 +30,23 @@ const EventList = () => {
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
   const [filledSeats, setFilledSeats] = useState<{ [key: string]: number }>({});
+  const [loading, setLoading] = useState(true); // Loading state
   const navigate = useNavigate();
-
-
 
   useEffect(() => {
     const fetchEventsAndSeats = async () => {
       try {
-        const eventsResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events`);
+        const eventsResponse = await axios.get<Event[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/events`
+        );
         setEvents(eventsResponse.data);
-  
+
         // Fetch transactions
-        const transactionsResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
+        const transactionsResponse = await axios.get<Transaction[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/transactions`
+        );
         const transactions = transactionsResponse.data;
-  
+
         // Calculate filled seats for each event
         const filledSeatsCount = eventsResponse.data.reduce((acc: { [key: string]: number }, event: Event) => {
           acc[event._id] = transactions.filter(
@@ -46,16 +55,17 @@ const EventList = () => {
           ).length;
           return acc;
         }, {});
-  
+
         setFilledSeats(filledSeatsCount);
+        setLoading(false); // Stop loading once data is fetched
       } catch (error) {
         console.error('Error fetching events or transactions:', error);
+        setLoading(false); // Stop loading even in case of an error
       }
     };
-  
+
     fetchEventsAndSeats();
   }, []);
-  
 
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
@@ -156,51 +166,69 @@ const EventList = () => {
         </Col>
       </Row>
 
-      <Table striped bordered hover responsive variant='dark'>
-        <thead>
-          <tr>
-            <th>
-              <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
-            </th>
-            <th>Sr No</th>
-            <th onClick={() => handleSort('eventName')} style={{ cursor: 'pointer' }}>Name</th>
-            <th onClick={() => handleSort('eventDay')} style={{ cursor: 'pointer' }}>Day</th>
-            <th onClick={() => handleSort('eventCategory')} style={{ cursor: 'pointer' }}>Category</th>
-            <th onClick={() => handleSort('startTime')} style={{ cursor: 'pointer' }}>Time</th>
-            <th onClick={() => handleSort('maxSeats')} style={{ cursor: 'pointer' }}>Seats</th>
-            <th onClick={() => handleSort('entryFees')} style={{ cursor: 'pointer' }}>Entry Fee</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredEvents.map((event, index) => (
-            <tr key={event._id}>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={selectedEvents.includes(event._id)}
-                  onChange={() => handleSelectEvent(event._id)}
-                />
-              </td>
-              <td>{index + 1}</td>
-              <td>{event.eventName}</td>
-              <td>Day {event.eventDay}</td>
-              <td style={{ textTransform: 'capitalize' }}>{event.eventCategory}</td>
-              <td>{`${event.startTime} - ${event.endTime}`}</td>
-              <td>{event.maxSeats === 0 ? 'Unlimited' : `${filledSeats[event._id] || 0} / ${event.maxSeats}`}</td>
-              <td>{event.maxSeats === 0 ? '' : `${event.entryFees}`}</td>
-              <td>
-                <Button variant="primary" size="sm" className="me-2" onClick={() => handleEditEvent(event)}>
-                  Edit
-                </Button>
-                <Button variant="danger" size="sm" onClick={() => confirmDeleteEvent(event)}>
-                  Delete
-                </Button>
-              </td>
+      {loading ? (
+        <div className="d-flex justify-content-center">
+          <Spinner animation="border" />
+        </div>
+      ) : (
+        <Table striped bordered hover responsive variant="dark">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
+              </th>
+              <th>Sr No</th>
+              <th onClick={() => handleSort('eventName')} style={{ cursor: 'pointer' }}>
+                Name {sortConfig?.key === 'eventName' && (sortConfig.direction === 'ascending' ? <FaArrowUp /> : <FaArrowDown />)}
+              </th>
+              <th onClick={() => handleSort('eventDay')} style={{ cursor: 'pointer' }}>
+                Day {sortConfig?.key === 'eventDay' && (sortConfig.direction === 'ascending' ? <FaArrowUp /> : <FaArrowDown />)}
+              </th>
+              <th onClick={() => handleSort('eventCategory')} style={{ cursor: 'pointer' }}>
+                Category {sortConfig?.key === 'eventCategory' && (sortConfig.direction === 'ascending' ? <FaArrowUp /> : <FaArrowDown />)}
+              </th>
+              <th onClick={() => handleSort('startTime')} style={{ cursor: 'pointer' }}>
+                Time {sortConfig?.key === 'startTime' && (sortConfig.direction === 'ascending' ? <FaArrowUp /> : <FaArrowDown />)}
+              </th>
+              <th onClick={() => handleSort('maxSeats')} style={{ cursor: 'pointer' }}>
+                Seats {sortConfig?.key === 'maxSeats' && (sortConfig.direction === 'ascending' ? <FaArrowUp /> : <FaArrowDown />)}
+              </th>
+              <th onClick={() => handleSort('entryFees')} style={{ cursor: 'pointer' }}>
+                Entry Fee {sortConfig?.key === 'entryFees' && (sortConfig.direction === 'ascending' ? <FaArrowUp /> : <FaArrowDown />)}
+              </th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {filteredEvents.map((event, index) => (
+              <tr key={event._id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedEvents.includes(event._id)}
+                    onChange={() => handleSelectEvent(event._id)}
+                  />
+                </td>
+                <td>{index + 1}</td>
+                <td>{event.eventName}</td>
+                <td>Day {event.eventDay}</td>
+                <td style={{ textTransform: 'capitalize' }}>{event.eventCategory}</td>
+                <td>{`${event.startTime} - ${event.endTime}`}</td>
+                <td>{event.maxSeats === 0 ? 'Unlimited' : `${filledSeats[event._id] || 0} / ${event.maxSeats}`}</td>
+                <td>{event.maxSeats === 0 ? '' : `${event.entryFees}`}</td>
+                <td>
+                  <Button variant="primary" size="sm" className="me-2" onClick={() => handleEditEvent(event)}>
+                    Edit
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => confirmDeleteEvent(event)}>
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
 
       {/* Single Delete Confirmation Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -225,13 +253,15 @@ const EventList = () => {
         <Modal.Header closeButton style={{ backgroundColor: '#333' }}>
           <Modal.Title>Confirm Bulk Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ backgroundColor: '#333' }}>Are you sure you want to delete all selected events?</Modal.Body>
+        <Modal.Body style={{ backgroundColor: '#333' }}>
+          Are you sure you want to delete the selected events?
+        </Modal.Body>
         <Modal.Footer style={{ backgroundColor: '#333' }}>
           <Button variant="secondary" onClick={() => setShowBulkDeleteModal(false)}>
             Cancel
           </Button>
           <Button variant="danger" onClick={handleBulkDelete}>
-            Delete
+            Delete Selected
           </Button>
         </Modal.Footer>
       </Modal>

@@ -48,22 +48,52 @@ const EditEvent = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`);
-        const data = response.data;
-        setFormData({
-          ...data,
-          individualOrTeam: data.teamSize > 1 ? 'team' : 'individual',
-          teamSize: data.teamSize,
-        });
-        setIsTeam(data.teamSize > 1);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`
+        );
+        const data: unknown = response.data;
+
+        if (
+          data &&
+          typeof data === "object" &&
+          "teamSize" in data &&
+          typeof data.teamSize === "number"
+        ) {
+          const teamSize = (data as { teamSize: number }).teamSize;
+
+          setFormData({
+            ...(data as {
+              eventName: string;
+              eventBanner: string | File;
+              eventDetails: string;
+              entryFees: number;
+              eventCategory: string;
+              eventDay: string;
+              startTime: string;
+              endTime: string;
+              maxSeats: number;
+              individualOrTeam: string;
+              teamSize: number | undefined;
+              isFeatured: boolean;
+              whatsapp: string;
+              dept: number;
+            }),
+            individualOrTeam: teamSize > 1 ? "team" : "individual",
+            teamSize,
+          });
+        } else {
+          console.error("Data is not in the expected format:", data);
+        }
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching event data:', error);
+        console.error("Error fetching event data:", error);
         setLoading(false);
       }
     };
     fetchEvent();
   }, [eventId]);
+
+
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;

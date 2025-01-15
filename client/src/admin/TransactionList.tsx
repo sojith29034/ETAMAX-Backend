@@ -35,48 +35,50 @@ const TransactionList = () => {
   const [showAlert, setShowAlert] = useState<{ message: string; variant: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        const transactionResponse = await axios.get<Transaction[]>(
-          `${import.meta.env.VITE_BASE_URL}/api/transactions`
-        );
-        setTransactions(transactionResponse.data);
+ useEffect(() => {
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      const transactionResponse = await axios.get<Transaction[]>(
+        `${import.meta.env.VITE_BASE_URL}/api/transactions`
+      );
+      const transactionsData = transactionResponse.data;
+      setTransactions(transactionsData);
 
-        const eventIds: string[] = transactionResponse.data.map((transaction: Transaction) => transaction.eventId);
-        const uniqueEventIds: string[] = Array.from(new Set(eventIds));
+      const eventIds: string[] = transactionsData.map((transaction: Transaction) => transaction.eventId);
+      const uniqueEventIds: string[] = Array.from(new Set(eventIds));
 
-        const eventResponses = await Promise.all(
-          uniqueEventIds.map((eventId: string) =>
-            axios.get<Event>(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
-          )
-        );
+      const eventResponses = await Promise.all(
+        uniqueEventIds.map((eventId: string) =>
+          axios.get<Event>(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
+        )
+      );
 
-        const eventDetailsMap = eventResponses.reduce((acc, response) => {
-          const eventData: Event = response.data;
-          const confirmedSeats = transactions.filter(
-            (transaction: Transaction) =>
-              transaction.eventId === eventData._id && transaction.payment === 1
-          ).length;
+      const eventDetailsMap = eventResponses.reduce((acc, response) => {
+        const eventData: Event = response.data;
+        const confirmedSeats = transactionsData.filter(
+          (transaction: Transaction) =>
+            transaction.eventId === eventData._id && transaction.payment === 1
+        ).length;
 
-          acc[eventData._id] = {
-            ...eventData,
-            confirmedSeats,
-          };
-          return acc;
-        }, {} as { [key: string]: Event });
+        acc[eventData._id] = {
+          ...eventData,
+          confirmedSeats,
+        };
+        return acc;
+      }, {} as { [key: string]: Event });
 
-        setEventDetails(eventDetailsMap);
-      } catch (error) {
-        console.error('Error fetching transactions or events:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setEventDetails(eventDetailsMap);
+    } catch (error) {
+      console.error('Error fetching transactions or events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchTransactions();
-  }, [transactions]);
+  fetchTransactions();
+}, []); 
+
 
 
   const handleSelectAll = () => {

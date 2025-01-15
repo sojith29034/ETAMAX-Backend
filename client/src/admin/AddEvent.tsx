@@ -53,13 +53,15 @@ const AddEvent = () => {
     const formData = new FormData(event.target as HTMLFormElement);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/events`, Object.fromEntries(formData), {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/events`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      // console.log('Event created successfully:', response.data);
-      setMessage(`${response.data.eventName} added successfully`);
+      console.log('Event created successfully:', response.data);
+      const data = response.data as { eventName: string }; // Type assertion
+
+      setMessage(`${data.eventName} added successfully`);
       setVariant('success');
       setShow(true);
 
@@ -79,24 +81,37 @@ const AddEvent = () => {
 
   return (
     <Container className="my-4">
-      <h2 className='text-center'>Add Event</h2>
-      {show &&
+      <h2 className="text-center">Add Event</h2>
+      {show && (
         <Alert variant={variant} onClose={() => setShow(false)} dismissible>
-          <Alert.Heading><h5>{message}</h5></Alert.Heading>
+          <Alert.Heading>
+            <h5>{message}</h5>
+          </Alert.Heading>
         </Alert>
-      }
+      )}
       <Form onSubmit={handleSubmit}>
         <Row>
           <Col>
             <Form.Group controlId="eventName" className="mb-3">
               <Form.Label>Event Name</Form.Label>
-              <Form.Control type="text" name="eventName" placeholder="Enter event name" required />
+              <Form.Control
+                type="text"
+                name="eventName"
+                placeholder="Enter event name"
+                required
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group controlId="eventBanner" className="mb-3">
               <Form.Label>Event Banner</Form.Label>
-              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} required />
+              <Form.Control
+                type="file"
+                name="eventBanner"
+                accept=".jpg, .jpeg, .png"
+                onChange={handleImageChange}
+                required
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -105,13 +120,23 @@ const AddEvent = () => {
           <Col md={11}>
             <Form.Group controlId="eventDetails" className="mb-3">
               <Form.Label>Details</Form.Label>
-              <Form.Control as="textarea" name="eventDetails" rows={3} placeholder="Enter event details" required />
+              <Form.Control
+                as="textarea"
+                name="eventDetails"
+                rows={3}
+                placeholder="Enter event details"
+                required
+              />
             </Form.Group>
           </Col>
           <Col md={1}>
             <Form.Label>Preview</Form.Label>
             {preview ? (
-              <img src={preview} alt="Preview" style={{ width: '100%', height: 'auto' }} />
+              <img
+                src={preview}
+                alt="Preview"
+                style={{ width: "100%", height: "auto" }}
+              />
             ) : (
               <p>No banner uploaded</p>
             )}
@@ -122,13 +147,24 @@ const AddEvent = () => {
           <Col>
             <Form.Group controlId="entryFees" className="mb-3">
               <Form.Label>Entry Fees</Form.Label>
-              <Form.Control type="number" name="entryFees" min={0} placeholder="Enter entry fees" required />
+              <Form.Control
+                type="number"
+                name="entryFees"
+                min={0}
+                placeholder="Enter entry fees"
+                required
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group controlId="maxSeats" className="mb-3">
               <Form.Label>Max Seats</Form.Label>
-              <Form.Control type="number" name="maxSeats" placeholder="Enter max seats available" required />
+              <Form.Control
+                type="number"
+                name="maxSeats"
+                placeholder="Enter max seats available"
+                required
+              />
             </Form.Group>
           </Col>
           <Col>
@@ -158,31 +194,53 @@ const AddEvent = () => {
           <Col>
             <Form.Group controlId="startTime" className="mb-3">
               <Form.Label>Start Time</Form.Label>
-              <Form.Control type="time" name="startTime" step="1800" value={startTime}
-                onChange={(e) => setStartTime(e.target.value)} required />
+              <Form.Control
+                type="time"
+                name="startTime"
+                step="1800"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group controlId="endTime" className="mb-3">
               <Form.Label>End Time</Form.Label>
-              <Form.Control type="time" name="endTime" step="1800" value={endTime}
-                onChange={(e) => setEndTime(e.target.value)} required />
+              <Form.Control
+                type="time"
+                name="endTime"
+                step="1800"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                required
+              />
             </Form.Group>
           </Col>
-          <Col className='d-flex align-items-center justify-content-center'>
+          <Col className="d-flex align-items-center justify-content-center">
             <Form.Group controlId="isFeatured" className="mb-3">
-              <Form.Check type="checkbox" label="Feature Event?" name="isFeatured" checked={isFeatured} onChange={handleCheckboxChange} />
+              <Form.Check
+                type="checkbox"
+                label="Feature Event?"
+                name="isFeatured"
+                checked={isFeatured}
+                onChange={handleCheckboxChange}
+              />
             </Form.Group>
           </Col>
         </Row>
-        
+
         <Row>
           <Col>
             <Row>
               <Col>
                 <Form.Group controlId="individualOrTeam" className="mb-3">
                   <Form.Label>Participation Type</Form.Label>
-                  <Form.Select name="individualOrTeam" onChange={handleTeamChange} required>
+                  <Form.Select
+                    name="individualOrTeam"
+                    onChange={handleTeamChange}
+                    required
+                  >
                     <option value="individual">Individual</option>
                     <option value="team">Team</option>
                   </Form.Select>
@@ -192,7 +250,12 @@ const AddEvent = () => {
                 <Col>
                   <Form.Group controlId="teamSize" className="mb-3">
                     <Form.Label>Team Size</Form.Label>
-                    <Form.Control type="number" name="teamSize" placeholder="Enter team size" />
+                    <Form.Control
+                      type="number"
+                      name="teamSize"
+                      placeholder="Enter team size"
+                      required={isTeam}
+                    />
                   </Form.Group>
                 </Col>
               )}
@@ -201,13 +264,22 @@ const AddEvent = () => {
           <Col>
             <Form.Group controlId="whatsapp" className="mb-3">
               <Form.Label>WhatsApp Group Link</Form.Label>
-              <Form.Control type="text" name="whatsapp" placeholder="Enter WhatsApp Group Link" />
+              <Form.Control
+                type="text"
+                name="whatsapp"
+                placeholder="Enter WhatsApp Group Link"
+              />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group controlId="dept" className="mb-3">
               <Form.Label>Eligible Department</Form.Label>
-              <Form.Select name="dept" value={selectedDept} onChange={handleDeptChange} required>
+              <Form.Select
+                name="dept"
+                value={selectedDept}
+                onChange={handleDeptChange}
+                required
+              >
                 <option value="0">For All</option>
                 <option value="1">Computer Science</option>
                 <option value="2">Mechanical</option>
@@ -224,7 +296,6 @@ const AddEvent = () => {
             Submit
           </Button>
         </div>
-
       </Form>
     </Container>
   );

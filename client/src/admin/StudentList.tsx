@@ -24,7 +24,9 @@ function StudentList() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/students`);
+        const response = await axios.get<Student[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/students`
+        );
         setStudents(response.data);
         setLoading(false);
       } catch (error) {
@@ -44,16 +46,27 @@ function StudentList() {
   const handleSave = async () => {
     if (editedStudent) {
       try {
-        const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/students/${editedStudent._id}`, {
-          name: editedStudent.name,
-          rollNumber: editedStudent.rollNumber,
-          email: editedStudent.email,
-        });
+        const response = await axios.put<Student>(
+          `${import.meta.env.VITE_BASE_URL}/api/students/${editedStudent._id}`,
+          {
+            name: editedStudent.name,
+            rollNumber: editedStudent.rollNumber,
+            email: editedStudent.email,
+          }
+        );
 
-        setStudents(students.map((s) => (s._id === editedStudent._id ? response.data.student : s)));
+        // Only update state if the student was updated
+        setStudents((prevStudents) =>
+          prevStudents.map((student) =>
+            student._id === editedStudent._id ? response.data : student
+          )
+        );
         setEditingId(null);
         setEditedStudent(null);
-        setShowAlert({ message: 'Student updated successfully', variant: 'success' });
+        setShowAlert({
+          message: "Student updated successfully",
+          variant: "success",
+        });
       } catch (error) {
         console.error('Error updating student:', error);
         setShowAlert({ message: 'Error updating student', variant: 'danger' });

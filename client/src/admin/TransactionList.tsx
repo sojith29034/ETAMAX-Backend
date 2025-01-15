@@ -37,9 +37,11 @@ const TransactionList = () => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      setLoading(true);  // Set loading to true when starting the API call
+      setLoading(true);
       try {
-        const transactionResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
+        const transactionResponse = await axios.get<Transaction[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/transactions`
+        );
         setTransactions(transactionResponse.data);
 
         const eventIds: string[] = transactionResponse.data.map((transaction: Transaction) => transaction.eventId);
@@ -47,17 +49,20 @@ const TransactionList = () => {
 
         const eventResponses = await Promise.all(
           uniqueEventIds.map((eventId: string) =>
-            axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
+            axios.get<Event>(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
           )
         );
 
         const eventDetailsMap = eventResponses.reduce((acc, response) => {
           const eventData: Event = response.data;
+          const confirmedSeats = transactions.filter(
+            (transaction: Transaction) =>
+              transaction.eventId === eventData._id && transaction.payment === 1
+          ).length;
+
           acc[eventData._id] = {
             ...eventData,
-            confirmedSeats: transactionResponse.data.filter((transaction: Transaction) =>
-              transaction.eventId === eventData._id && transaction.payment === 1
-            ).length,
+            confirmedSeats,
           };
           return acc;
         }, {} as { [key: string]: Event });
@@ -71,7 +76,7 @@ const TransactionList = () => {
     };
 
     fetchTransactions();
-  }, []);
+  }, [transactions]);
 
 
   const handleSelectAll = () => {

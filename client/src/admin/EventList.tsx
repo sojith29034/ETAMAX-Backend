@@ -14,6 +14,12 @@ interface Event {
   entryFees: number;
 }
 
+interface Transaction {
+  _id: string;
+  eventId: string;
+  payment: number;
+}
+
 const EventList = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
@@ -31,11 +37,13 @@ const EventList = () => {
   useEffect(() => {
     const fetchEventsAndSeats = async () => {
       try {
-        const eventsResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/events`);
+        const eventsResponse = await axios.get<Event[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/events`
+        );
         setEvents(eventsResponse.data);
   
         // Fetch transactions
-        const transactionsResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
+        const transactionsResponse = await axios.get<Transaction[]>(`${import.meta.env.VITE_BASE_URL}/api/transactions`);
         const transactions = transactionsResponse.data;
   
         // Calculate filled seats for each event

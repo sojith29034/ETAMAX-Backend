@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import /*React,*/ { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import axios from 'axios';
+// import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './admin/Login.tsx';
 import Admin from './admin/Admin.tsx';
 
 function App() {
-  const [formData, setFormData] = useState({
-    name: '',
-    rollNumber: '',
-    email: ''
-  });
-  const [isLoading, setIsLoading] = useState(false); // State for loading
+  // const [formData, setFormData] = useState({
+  //   name: '',
+  //   rollNumber: '',
+  //   email: ''
+  // });
+  // const [isLoading, setIsLoading] = useState(false); // State for loading
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   setFormData({
+  //     ...formData,
+  //     [name]: value
+  //   });
+  // };
 
   // State to track admin login status
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
@@ -32,32 +32,32 @@ function App() {
     localStorage.setItem('isAdminLoggedIn', isAdminLoggedIn.toString());
   }, [isAdminLoggedIn]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/students`, formData);
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/students`, formData);
 
-      if (response.status === 200) {
-        console.log('Data saved:', response.data);
-        alert(`${response.data.student.rollNumber} registered successfully. Check ${response.data.student.email} inbox`);
+  //     if (response.status === 200) {
+  //       console.log('Data saved:', response.data);
+  //       alert(`${response.data.student.rollNumber} registered successfully. Check ${response.data.student.email} inbox`);
 
-        setFormData({
-          name: '',
-          rollNumber: '',
-          email: ''
-        });
-      } else {
-        console.error('Error:', response.status);
-        alert('Failed to save data');
-      }
-    } catch (error) {
-      console.error('Error saving data:', error);
-      alert('Error saving data');
-    } finally {
-      setIsLoading(false); // End loading
-    }
-  };
+  //       setFormData({
+  //         name: '',
+  //         rollNumber: '',
+  //         email: ''
+  //       });
+  //     } else {
+  //       console.error('Error:', response.status);
+  //       alert('Failed to save data');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error saving data:', error);
+  //     alert('Error saving data');
+  //   } finally {
+  //     setIsLoading(false); // End loading
+  //   }
+  // };
 
   return (
     <Router>

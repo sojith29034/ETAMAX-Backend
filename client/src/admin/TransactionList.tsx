@@ -39,6 +39,9 @@ const TransactionList = () => {
     []
   );
   const [selectAll, setSelectAll] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
+  const [updatedAmount, setUpdatedAmount] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -54,7 +57,7 @@ const TransactionList = () => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      setLoading(true);
+      setLoading(true); // Set loading to true when starting the API call
       try {
         const transactionResponse = await axios.get<Transaction[]>(
           `${import.meta.env.VITE_BASE_URL}/api/transactions`
@@ -68,12 +71,12 @@ const TransactionList = () => {
 
         const eventResponses = await Promise.all(
           uniqueEventIds.map((eventId: string) =>
-            axios.get<Event>(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
+            axios.get(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
           )
         );
 
         const eventDetailsMap = eventResponses.reduce((acc, response) => {
-          const eventData: Event = response.data;
+          const eventData: Event = response.data as Event;
           acc[eventData._id] = {
             ...eventData,
             confirmedSeats: transactionResponse.data.filter(
@@ -335,76 +338,109 @@ const TransactionList = () => {
           <thead>
             <tr>
               <th>
-                <Form.Check
+                <input
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
                 />
               </th>
+              <th>Sr No</th>
               <th>Enrolled By</th>
               <th>Event Name</th>
               <th>Amount</th>
               <th>Enrolled Roll Numbers</th>
-              <th>Transaction Date</th>
               <th>Payment Status</th>
+              <th>Transaction Date</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTransactions.map((transaction) => (
-              <tr key={transaction._id}>
-                <td>
-                  <Form.Check
-                    type="checkbox"
-                    checked={selectedTransactions.includes(transaction._id)}
-                    onChange={() => handleSelectTransaction(transaction._id)}
-                  />
-                </td>
-                <td>{transaction.teamName || transaction.enrolledId}</td>
-                <td>
-                  {eventDetails[transaction.eventId]?.eventName ||
-                    "Event Name Unavailable"}
-                </td>
-                <td>{transaction.amount}</td>
-                <td>{transaction.teamMembers.join("; ")}</td>
-                <td>
-                  {new Date(transaction.transactionDate).toLocaleString(
-                    "en-GB",
-                    { day: "2-digit", month: "2-digit", year: "numeric" }
-                  )}
-                </td>
-                <td>{transaction.payment === 1 ? "Confirmed" : "Pending"}</td>
-                <td>
-                  <Button
-                    variant="success"
-                    onClick={() => setTransactionToConfirm(transaction)}
-                    disabled={transaction.payment === 1}
-                  >
-                    Confirm
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => confirmDeleteTransaction(transaction)}
-                    className="ms-2"
-                  >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))}
+            {filteredTransactions.map((transaction, index) => {
+              const transactionDate = new Date(transaction.transactionDate);
+              const istDate = new Date(
+                transactionDate.toLocaleString("en-US", {
+                  timeZone: "Asia/Kolkata",
+                })
+              );
+              const formattedDate = `${("0" + istDate.getDate()).slice(-2)}-${(
+                "0" +
+                (istDate.getMonth() + 1)
+              ).slice(-2)}-${istDate.getFullYear()}`;
+              return (
+                <tr key={transaction._id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedTransactions.includes(transaction._id)}
+                      onChange={() => handleSelectTransaction(transaction._id)}
+                    />
+                  </td>
+                  <td>{index + 1}</td>
+                  <td>{transaction.teamName || transaction.enrolledId}</td>
+                  <td>
+                    {eventDetails[transaction.eventId]?.eventName ||
+                      "Event Name Unavailable"}
+                  </td>
+                  <td>{transaction.amount}</td>
+                  <td>{transaction.teamMembers?.join(", ")}</td>
+                  <td>{transaction.payment === 1 ? "Confirmed" : "Pending"}</td>
+                  <td>{formattedDate}</td>
+                  <td>
+                    <Button
+                      variant="success"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => {
+                        const event = eventDetails[transaction.eventId];
+                        if (event && event.confirmedSeats < event.maxSeats) {
+                          setTransactionToConfirm(transaction);
+                          setShowConfirmModal(true);
+                        } else {
+                          setShowAlert({
+                            message:
+                              "Cannot confirm payment: Event seats are full.",
+                            variant: "danger",
+                          });
+                        }
+                      }}
+                      disabled={transaction.payment === 1}
+                    >
+                      Confirm Payment
+                    </Button>
+                    <Button
+                      variant="warning"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => {
+                        setEditingTransaction(transaction);
+                        setUpdatedAmount(transaction.amount);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => confirmDeleteTransaction(transaction)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
       )}
 
-      {/* Confirm Payment Modal */}
       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Transaction</Modal.Title>
+        <Modal.Header closeButton style={{ background: "#333" }}>
+          <Modal.Title>Confirm Payment</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <p>Are you sure you want to confirm this transaction?</p>
+        <Modal.Body style={{ background: "#333" }}>
+          Are you sure you want to confirm the payment for this transaction?
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer style={{ background: "#333" }}>
           <Button
             variant="secondary"
             onClick={() => setShowConfirmModal(false)}
@@ -417,20 +453,86 @@ const TransactionList = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Delete Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton style={{ background: "#333" }}>
           <Modal.Title>Delete Transaction</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <p>Are you sure you want to delete this transaction?</p>
+        <Modal.Body style={{ background: "#333" }}>
+          Are you sure you want to delete this transaction?
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer style={{ background: "#333" }}>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
           <Button variant="danger" onClick={handleDeleteTransaction}>
             Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
+        show={!!editingTransaction}
+        onHide={() => setEditingTransaction(null)}
+      >
+        <Modal.Header closeButton style={{ background: "#333" }}>
+          <Modal.Title>Edit Amount</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ background: "#333" }}>
+          <Form>
+            <Form.Group controlId="amount">
+              <Form.Label>Amount</Form.Label>
+              <Form.Control
+                type="number"
+                value={updatedAmount ?? ""}
+                onChange={(e) => setUpdatedAmount(Number(e.target.value))}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer style={{ background: "#333" }}>
+          <Button
+            variant="secondary"
+            onClick={() => setEditingTransaction(null)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              if (editingTransaction) {
+                try {
+                  await axios.put(
+                    `${import.meta.env.VITE_BASE_URL}/api/transactions/${
+                      editingTransaction._id
+                    }`,
+                    { amount: updatedAmount }
+                  );
+                  setTransactions(
+                    transactions.map((transaction) =>
+                      transaction._id === editingTransaction._id
+                        ? {
+                            ...transaction,
+                            amount: updatedAmount ?? transaction.amount,
+                          }
+                        : transaction
+                    )
+                  );
+                  setShowAlert({
+                    message: "Amount updated successfully.",
+                    variant: "success",
+                  });
+                } catch (error) {
+                  console.error("Error updating amount:", error);
+                  setShowAlert({
+                    message: "Failed to update amount. Please try again.",
+                    variant: "danger",
+                  });
+                } finally {
+                  setEditingTransaction(null);
+                }
+              }
+            }}
+          >
+            Save Changes
           </Button>
         </Modal.Footer>
       </Modal>

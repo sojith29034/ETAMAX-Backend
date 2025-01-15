@@ -21,7 +21,7 @@ app.use("/assets/", express.static(path.join(__dirname, "assets")));
 // Configure CORS
 const allowedOrigins = [
   "https://etamax.netlify.app", // Netlify frontend
-  "https://etamax25.vercel.app/", // Vercel frontend
+  "https://etamax25.vercel.app", // Vercel frontend
   "http://localhost:5173", // Local development
   "http://localhost:5174", // Local development
 ];

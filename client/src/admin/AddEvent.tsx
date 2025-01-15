@@ -96,7 +96,7 @@ const AddEvent = () => {
           <Col>
             <Form.Group controlId="eventBanner" className="mb-3">
               <Form.Label>Event Banner</Form.Label>
-              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} required />
+              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} />
             </Form.Group>
           </Col>
         </Row>

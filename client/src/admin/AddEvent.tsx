@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import axios from 'axios';
 
+interface EventResponse {
+  eventName: string;
+  message?: string;
+}
+
 const AddEvent = () => {
   const [isTeam, setIsTeam] = useState(false);
   const [message, setMessage] = useState('');
@@ -42,8 +47,11 @@ const AddEvent = () => {
     event.preventDefault();
     setMessage('');
 
+    const start = new Date(`1970-01-01T${startTime}:00`);
+    const end = new Date(`1970-01-01T${endTime}:00`);
+
     // Check if end time is after start time
-    if (endTime <= startTime) {
+    if (end <= start) {
       setMessage('End time must be after the start time');
       setVariant('danger');
       setShow(true);
@@ -53,12 +61,16 @@ const AddEvent = () => {
     const formData = new FormData(event.target as HTMLFormElement);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/events`, Object.fromEntries(formData), {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      // console.log('Event created successfully:', response.data);
+      const response = await axios.post<EventResponse>(
+        `${import.meta.env.VITE_BASE_URL}/api/events`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log('Event created successfully:', response.data);
       setMessage(`${response.data.eventName} added successfully`);
       setVariant('success');
       setShow(true);

@@ -21,7 +21,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={isAdminLoggedIn ? <Admin /> : <Navigate to="/login" />}
+          element={isAdminLoggedIn ? <Navigate to="/admin" /> : <Navigate to="/login" />}
         />
 
         <Route

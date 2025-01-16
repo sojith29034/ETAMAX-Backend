@@ -110,7 +110,6 @@ const AddEvent = () => {
                 name="eventBanner"
                 accept=".jpg, .jpeg, .png"
                 onChange={handleImageChange}
-                required
               />
             </Form.Group>
           </Col>

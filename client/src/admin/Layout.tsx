@@ -7,9 +7,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="d-flex">
+    <div className="d-flex position-relative">
       <Sidebar />
-      <div className="content p-4" style={{ flex: 1 }}>
+      <div className="content p-4" style={{ flex: 1, marginLeft:'250px' }}>
         {children}
       </div>
     </div>

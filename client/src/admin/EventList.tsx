@@ -196,7 +196,7 @@ const EventList = () => {
               <td style={{ textTransform: 'capitalize' }}>{event.eventCategory}</td>
               <td>{`${event.startTime} - ${event.endTime}`}</td>
               <td>{event.maxSeats === 0 ? 'Unlimited' : `${filledSeats[event._id] || 0} / ${event.maxSeats}`}</td>
-              <td>{event.maxSeats === 0 ? '' : `${event.entryFees}`}</td>
+              <td>{event.maxSeats === 0 ? 'Free' : `${event.entryFees}`}</td>
               <td>
                 <Button variant="primary" size="sm" className="me-2" onClick={() => handleEditEvent(event)}>
                   Edit

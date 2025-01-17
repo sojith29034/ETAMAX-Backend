@@ -12,7 +12,7 @@ const EditEvent = () => {
   const [variant, setVariant] = useState('');
   const [show, setShow] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Loading state for async operation
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<{
     eventName: string;
     eventBanner: string | File;
@@ -121,21 +121,38 @@ const EditEvent = () => {
     }
   };
 
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       if (typeof reader.result === 'string') {
+  //         setPreview(reader.result);
+  //       }
+  //     };
+  //     reader.readAsDataURL(file);
+  
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       eventBanner: file,
+  //     }));
+  //   }
+  // };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
+        if (typeof reader.result === "string") {
           setPreview(reader.result);
+          setFormData((prevData) => ({
+            ...prevData,
+            eventBanner: typeof prevData.eventBanner === 'string' ? prevData.eventBanner : prevData.eventBanner
+          }));
         }
       };
       reader.readAsDataURL(file);
-  
-      setFormData((prevData) => ({
-        ...prevData,
-        eventBanner: file,
-      }));
     }
   };
   const handleSubmit = async (e: React.FormEvent) => {
@@ -156,8 +173,8 @@ const EditEvent = () => {
     formDataToSubmit.append('whatsapp', formData.whatsapp);
     formDataToSubmit.append('dept', String(formData.dept));
   
-    if (formData.eventBanner instanceof File) {
-      formDataToSubmit.append('eventBanner', formData.eventBanner);
+    if (typeof formData.eventBanner === "string") {
+      formDataToSubmit.append("eventBanner", formData.eventBanner);
     }
   
     try {
@@ -189,7 +206,11 @@ const EditEvent = () => {
 
   return (
     <Container className="my-4">
-      <Button variant="success" onClick={() => navigate('/admin')} style={{ display:'none' }}>
+      <Button
+        variant="success"
+        onClick={() => navigate("/admin")}
+        style={{ display: "none" }}
+      >
         Event List
       </Button>
       <h2 className="text-center">Edit Event</h2>
@@ -215,7 +236,12 @@ const EditEvent = () => {
           <Col>
             <Form.Group controlId="eventBanner" className="mb-3">
               <Form.Label>Event Banner</Form.Label>
-              <Form.Control type="file" name="eventBanner" accept=".jpg, .jpeg, .png" onChange={handleImageChange} />
+              <Form.Control
+                type="file"
+                name="eventBanner"
+                accept=".jpg, .jpeg, .png"
+                onChange={handleImageChange}
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -240,13 +266,14 @@ const EditEvent = () => {
               <img
                 src={preview}
                 alt="Preview"
-                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+                style={{ width: "100%", height: "auto", borderRadius: "8px" }}
               />
-            ) : formData.eventBanner ? (
+            ) : formData.eventBanner &&
+              typeof formData.eventBanner === "string" ? (
               <img
-                src={`${import.meta.env.VITE_BASE_URL}/${formData.eventBanner}`}
+                src={formData.eventBanner}
                 alt="Uploaded Banner"
-                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+                style={{ width: "100%", height: "auto", borderRadius: "8px" }}
               />
             ) : (
               <p>No banner uploaded</p>
@@ -283,7 +310,12 @@ const EditEvent = () => {
           <Col>
             <Form.Group controlId="eventCategory" className="mb-3">
               <Form.Label>Category</Form.Label>
-              <Form.Select name="eventCategory" value={formData.eventCategory} onChange={handleChange} required>
+              <Form.Select
+                name="eventCategory"
+                value={formData.eventCategory}
+                onChange={handleChange}
+                required
+              >
                 <option value="cultural">Cultural</option>
                 <option value="sports">Sports</option>
                 <option value="technical">Technical</option>
@@ -294,7 +326,12 @@ const EditEvent = () => {
           <Col>
             <Form.Group controlId="eventDay" className="mb-3">
               <Form.Label>Day</Form.Label>
-              <Form.Select name="eventDay" value={formData.eventDay} onChange={handleChange} required>
+              <Form.Select
+                name="eventDay"
+                value={formData.eventDay}
+                onChange={handleChange}
+                required
+              >
                 <option value="1">Day 1</option>
                 <option value="2">Day 2</option>
                 <option value="3">Day 3</option>
@@ -330,9 +367,15 @@ const EditEvent = () => {
               />
             </Form.Group>
           </Col>
-          <Col className='d-flex align-items-center justify-content-center'>
+          <Col className="d-flex align-items-center justify-content-center">
             <Form.Group controlId="isFeatured" className="mb-3">
-              <Form.Check type="checkbox" label="Feature Event?" name="isFeatured" checked={formData.isFeatured} onChange={handleCheckboxChange} />
+              <Form.Check
+                type="checkbox"
+                label="Feature Event?"
+                name="isFeatured"
+                checked={formData.isFeatured}
+                onChange={handleCheckboxChange}
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -343,7 +386,12 @@ const EditEvent = () => {
               <Col>
                 <Form.Group controlId="individualOrTeam" className="mb-3">
                   <Form.Label>Participation Type</Form.Label>
-                  <Form.Select name="individualOrTeam" value={formData.individualOrTeam} onChange={handleChange} required>
+                  <Form.Select
+                    name="individualOrTeam"
+                    value={formData.individualOrTeam}
+                    onChange={handleChange}
+                    required
+                  >
                     <option value="individual">Individual</option>
                     <option value="team">Team</option>
                   </Form.Select>
@@ -356,7 +404,7 @@ const EditEvent = () => {
                     <Form.Control
                       type="number"
                       name="teamSize"
-                      value={formData.teamSize || ''}
+                      value={formData.teamSize || ""}
                       onChange={handleChange}
                       placeholder="Enter max team members"
                       required={isTeam}
@@ -380,7 +428,12 @@ const EditEvent = () => {
           <Col>
             <Form.Group controlId="dept" className="mb-3">
               <Form.Label>Department</Form.Label>
-              <Form.Select name="dept" value={formData.dept} onChange={handleChange} required>
+              <Form.Select
+                name="dept"
+                value={formData.dept}
+                onChange={handleChange}
+                required
+              >
                 <option value="0">For All</option>
                 <option value="1">Computer Science</option>
                 <option value="2">Mechanical</option>

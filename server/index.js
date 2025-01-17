@@ -1,37 +1,49 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-require('dotenv').config(); // Load environment variables
-const path = require('path');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+require("dotenv").config();
 
 // Import Routes
-const studentRoutes = require('./routes/studentRoutes');
-const eventRoutes = require('./routes/eventRoutes');
-const transactionRoutes = require('./routes/transactionRoutes');
+const studentRoutes = require("./routes/studentRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
 // Initialize Express
 const app = express();
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: "100mb" })); // Increased limit for Base64 data
 app.use(cors());
-app.use(bodyParser.json());
-app.use('/assets/', express.static(path.join(__dirname, 'assets')));
+app.use(bodyParser.json({ limit: "100mb" })); // Increased limit for Base64 data
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL)
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
-    console.log('MongoDB connected');
+    console.log("MongoDB connected");
   })
   .catch((err) => {
-    console.log('Error connecting to MongoDB:', err);
+    console.error("Error connecting to MongoDB:", err);
   });
 
 // Use Routes
-app.use('/api', studentRoutes);
-app.use('/api', eventRoutes);
-app.use('/api', transactionRoutes);
+app.use("/api", studentRoutes);
+app.use("/api", eventRoutes);
+app.use("/api", transactionRoutes);
+
+// Health Check Route
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
+
+// Handle Undefined Routes
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
+});
 
 // Start the server
 const PORT = process.env.PORT || 5000;

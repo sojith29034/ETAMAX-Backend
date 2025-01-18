@@ -148,13 +148,14 @@ const EditEvent = () => {
           setPreview(reader.result);
           setFormData((prevData) => ({
             ...prevData,
-            eventBanner: typeof prevData.eventBanner === 'string' ? prevData.eventBanner : prevData.eventBanner
+            eventBanner: reader.result as string, // Set eventBanner to the Base64 string
           }));
         }
       };
       reader.readAsDataURL(file);
     }
   };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -174,7 +175,12 @@ const EditEvent = () => {
     formDataToSubmit.append('dept', String(formData.dept));
   
     if (typeof formData.eventBanner === "string") {
-      formDataToSubmit.append("eventBanner", formData.eventBanner);
+      const base64 = formData.eventBanner.split(",")[1];
+      const byteCharacters = atob(base64);
+      const byteNumbers = Array.from(byteCharacters, (char) => char.charCodeAt(0));
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "image/png" });
+      formDataToSubmit.append("eventBanner", blob, "event-banner.png");
     }
   
     try {

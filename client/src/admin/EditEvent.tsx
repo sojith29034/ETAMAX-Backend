@@ -106,6 +106,15 @@ const EditEvent = () => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
+    if ((name === "entryFees" || name === "maxSeats") && Number(value) < 0) {
+      alert(
+        `${
+          name === "entryFees" ? "Entry Fees" : "Max Seats"
+        } cannot be less than 0`
+      );
+      return;
+    }
+    
     setFormData((prevData) => ({
       ...prevData,
       [name]: name === 'entryFees' || name === 'maxSeats' ? Number(value) : value,
@@ -120,24 +129,6 @@ const EditEvent = () => {
       }));
     }
   };
-
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       if (typeof reader.result === 'string') {
-  //         setPreview(reader.result);
-  //       }
-  //     };
-  //     reader.readAsDataURL(file);
-  
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       eventBanner: file,
-  //     }));
-  //   }
-  // };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

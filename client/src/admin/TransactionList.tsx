@@ -99,7 +99,7 @@ const TransactionList = () => {
       const event = eventDetails[transactionToConfirm.eventId];
       if (event && event.confirmedSeats < event.maxSeats) {
         try {
-          const formattedDate = new Date().toLocaleString();
+          const formattedDate = new Date().toISOString();
           const updatedData = {
             payment: 1,
             transactionDate: formattedDate,

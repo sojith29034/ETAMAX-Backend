@@ -14,7 +14,12 @@ const app = express();
 
 // Middleware
 app.use(express.json({ limit: "100mb" })); // Increased limit for Base64 data
-app.use(cors());
+app.use(cors({ 
+  origin: "*", // Allow all origins
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allowed methods
+  preflightContinue: false, 
+  optionsSuccessStatus: 204 
+}));
 app.use(bodyParser.json({ limit: "100mb" })); // Increased limit for Base64 data
 
 // Connect to MongoDB

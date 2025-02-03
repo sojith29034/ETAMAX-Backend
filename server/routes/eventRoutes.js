@@ -136,7 +136,7 @@ router.put("/events/:id", upload.single("eventBanner"), async (req, res) => {
 // Route to fetch all events
 router.get("/events", async (req, res) => {
   try {
-    const events = await Event.find();
+    const events = await Event.find().maxTimeMS(10000);
     res.status(200).json(events);
   } catch (error) {
     console.error("Error fetching events:", error);

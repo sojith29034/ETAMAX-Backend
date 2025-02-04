@@ -133,16 +133,38 @@ router.put("/events/:id", upload.single("eventBanner"), async (req, res) => {
   }
 });
 
-// Route to fetch all events
+// Route to fetch all events without eventBanner
 router.get("/events", async (req, res) => {
   try {
-    const events = await Event.find().maxTimeMS(10000);
+    const events = await Event.find().select('-eventBanner');
     res.status(200).json(events);
   } catch (error) {
     console.error("Error fetching events:", error);
     res
       .status(500)
       .json({ message: "Internal Server Error", error: error.message });
+  }
+});
+// now get eventBanners slowly
+router.get("/eventBanner/:id", async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id).select("eventBanner");
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    res.status(200).json({ eventBanner: event.eventBanner });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to fetch only featured events without eventBanner
+router.get("/events/featured", async (req, res) => {
+  try {
+    const featuredEvents = await Event.find({ isFeatured: true });
+    res.status(200).json(featuredEvents);
+  } catch (error) {
+    console.error("Error fetching featured events:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
 

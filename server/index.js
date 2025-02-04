@@ -14,8 +14,13 @@ const app = express();
 
 // Middleware
 app.use(express.json({ limit: "100mb" })); // Increased limit for Base64 data
+const allowedDomains = [
+  "https://etamax-25-frontend.vercel.app",
+  "https://etamax.netlify.app",
+  "https://etamax25.vercel.app",
+];
 app.use(cors({ 
-  origin: "*", // Allow all origins
+  origin: allowedDomains,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allowed methods
   preflightContinue: false, 
   optionsSuccessStatus: 204 

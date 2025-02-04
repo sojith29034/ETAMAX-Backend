@@ -35,49 +35,55 @@ const TransactionList = () => {
   const [showAlert, setShowAlert] = useState<{ message: string; variant: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
- useEffect(() => {
-  const fetchTransactions = async () => {
-    setLoading(true);
-    try {
-      const transactionResponse = await axios.get<Transaction[]>(
-        `${import.meta.env.VITE_BASE_URL}/api/transactions`
-      );
-      const transactionsData = transactionResponse.data;
-      setTransactions(transactionsData);
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setLoading(true);
+      try {
+        // Fetch transactions
+        const transactionResponse = await axios.get<Transaction[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/transactions`
+        );
+        const transactionsData = transactionResponse.data;
+        setTransactions(transactionsData);
 
-      const eventIds: string[] = transactionsData.map((transaction: Transaction) => transaction.eventId);
-      const uniqueEventIds: string[] = Array.from(new Set(eventIds));
+        // Extract event IDs from transactions
+        const eventIds: string[] = transactionsData.map(
+          (transaction) => transaction.eventId
+        );
+        const uniqueEventIds: string[] = Array.from(new Set(eventIds));
 
-      const eventResponses = await Promise.all(
-        uniqueEventIds.map((eventId: string) =>
-          axios.get<Event>(`${import.meta.env.VITE_BASE_URL}/api/events/${eventId}`)
-        )
-      );
+        // Bulk fetch event details for unique event IDs
+        const eventResponse = await axios.post<Event[]>(
+          `${import.meta.env.VITE_BASE_URL}/api/events/bulk`,
+          { eventIds: uniqueEventIds }
+        );
+        const eventDetailsData = eventResponse.data;
 
-      const eventDetailsMap = eventResponses.reduce((acc, response) => {
-        const eventData: Event = response.data;
-        const confirmedSeats = transactionsData.filter(
-          (transaction: Transaction) =>
-            transaction.eventId === eventData._id && transaction.payment === 1
-        ).length;
+        // Create a map of event details with confirmed seats
+        const eventDetailsMap = eventDetailsData.reduce((acc, eventData) => {
+          const confirmedSeats = transactionsData.filter(
+            (transaction) =>
+              transaction.eventId === eventData._id && transaction.payment === 1
+          ).length;
 
-        acc[eventData._id] = {
-          ...eventData,
-          confirmedSeats,
-        };
-        return acc;
-      }, {} as { [key: string]: Event });
+          acc[eventData._id] = {
+            ...eventData,
+            confirmedSeats,
+          };
+          return acc;
+        }, {} as { [key: string]: Event });
 
-      setEventDetails(eventDetailsMap);
-    } catch (error) {
-      console.error('Error fetching transactions or events:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        // Set the event details state
+        setEventDetails(eventDetailsMap);
+      } catch (error) {
+        console.error("Error fetching transactions or events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchTransactions();
-}, []); 
+    fetchTransactions();
+  }, []);
 
 
 

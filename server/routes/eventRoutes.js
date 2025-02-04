@@ -157,13 +157,25 @@ router.get("/eventBanner/:id", async (req, res) => {
   }
 });
 
-// Route to fetch only featured events without eventBanner
+// Route to fetch only featured events with eventBanner
 router.get("/events/featured", async (req, res) => {
   try {
     const featuredEvents = await Event.find({ isFeatured: true });
     res.status(200).json(featuredEvents);
   } catch (error) {
     console.error("Error fetching featured events:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+});
+
+// Route to fetch multiple events by their IDs
+router.post("/events/bulk", async (req, res) => {
+  try {
+    const { eventIds } = req.body;
+    const events = await Event.find({ _id: { $in: eventIds } });
+    res.status(200).json(events);
+  } catch (error) {
+    console.error("Error fetching multiple events:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });

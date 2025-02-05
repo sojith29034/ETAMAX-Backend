@@ -246,7 +246,7 @@ const TransactionList = () => {
           {selectedTransactions.length > 0 && (
             <Button
               variant="danger"
-              className="me-2"
+              className="me-2 d-none"
               onClick={handleBulkDelete}
               disabled={loading}
             >

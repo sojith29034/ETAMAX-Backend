@@ -38,7 +38,7 @@ const sendRegistrationEmail = async (studentEmail, rollNumber, rawPassword) => {
         <p>Welcome to our system!</p>
         <p>Your roll number is: <strong>${rollNumber}</strong></p>
         <p>Your password is: <strong>${rawPassword}</strong></p>
-        <p><a href="https://etamax25.vercel.app/" style="color: #1a73e8; text-decoration: none;">Login here</a></p>
+        <p><a href="http://etamax.fcrit.ac.in/" style="color: #1a73e8; text-decoration: none;">Login here</a></p>
         <p>Best regards,<br>ETAMAX FCRIT Team</p>
       </div>`
   };

@@ -39,41 +39,23 @@ const TransactionList = () => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
-        // Fetch transactions
-        const transactionResponse = await axios.get<Transaction[]>(
-          `${import.meta.env.VITE_BASE_URL}/api/transactions`
-        );
+        const [transactionResponse, eventResponse] = await Promise.all([
+          axios.get<Transaction[]>(
+            `${import.meta.env.VITE_BASE_URL}/api/transactions`
+          ),
+          axios.get<Event[]>(`${import.meta.env.VITE_BASE_URL}/api/events`),
+        ]);
+
         const transactionsData = transactionResponse.data;
-        setTransactions(transactionsData);
+        const eventsData = eventResponse.data;
 
-        // Extract event IDs from transactions
-        const eventIds: string[] = transactionsData.map(
-          (transaction) => transaction.eventId
-        );
-        const uniqueEventIds: string[] = Array.from(new Set(eventIds));
-
-        // Bulk fetch event details for unique event IDs
-        const eventResponse = await axios.post<Event[]>(
-          `${import.meta.env.VITE_BASE_URL}/api/events/bulk`,
-          { eventIds: uniqueEventIds }
-        );
-        const eventDetailsData = eventResponse.data;
-
-        // Create a map of event details with confirmed seats
-        const eventDetailsMap = eventDetailsData.reduce((acc, eventData) => {
-          const confirmedSeats = transactionsData.filter(
-            (transaction) =>
-              transaction.eventId === eventData._id && transaction.payment === 1
-          ).length;
-
-          acc[eventData._id] = {
-            ...eventData,
-            confirmedSeats,
-          };
+        // Map event details for quick lookup
+        const eventDetailsMap = eventsData.reduce((acc, event) => {
+          acc[event._id] = event;
           return acc;
         }, {} as { [key: string]: Event });
 
-        // Set the event details state
+        setTransactions(transactionsData);
         setEventDetails(eventDetailsMap);
       } catch (error) {
         console.error("Error fetching transactions or events:", error);

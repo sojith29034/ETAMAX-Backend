@@ -39,6 +39,7 @@ const TransactionList = () => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
+        // Fetch transactions and events in parallel
         const [transactionResponse, eventResponse] = await Promise.all([
           axios.get<Transaction[]>(
             `${import.meta.env.VITE_BASE_URL}/api/transactions`
@@ -49,11 +50,25 @@ const TransactionList = () => {
         const transactionsData = transactionResponse.data;
         const eventsData = eventResponse.data;
 
-        // Map event details for quick lookup
+        // Compute confirmed seats per event
+        const confirmedSeatsMap = transactionsData.reduce(
+          (acc, transaction) => {
+            if (transaction.payment === 1) {
+              acc[transaction.eventId] = (acc[transaction.eventId] || 0) + 1;
+            }
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+
+        // Map event details and attach confirmed seats
         const eventDetailsMap = eventsData.reduce((acc, event) => {
-          acc[event._id] = event;
+          acc[event._id] = {
+            ...event,
+            confirmedSeats: confirmedSeatsMap[event._id] || 0, // Default to 0 if no confirmed seats
+          };
           return acc;
-        }, {} as { [key: string]: Event });
+        }, {} as { [key: string]: Event & { confirmedSeats: number } });
 
         setTransactions(transactionsData);
         setEventDetails(eventDetailsMap);
@@ -66,7 +81,6 @@ const TransactionList = () => {
 
     fetchTransactions();
   }, []);
-
 
 
   const handleSelectAll = () => {

@@ -45,6 +45,9 @@ const Attendance = () => {
         const transactionsResponse = await axios.get<Transaction[]>(
           `${import.meta.env.VITE_BASE_URL}/api/transactions`
         );
+        console.log(transactionsResponse);
+        console.log(studentsResponse);
+        console.log(eventsResponse);
         setTransactions(transactionsResponse.data);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -103,7 +106,9 @@ const Attendance = () => {
 
         if (sheetData.length > 0) {
           const worksheet = XLSX.utils.json_to_sheet(sheetData);
-          const sheetName = `${event.eventName} (Day ${event.eventDay} - ${event.eventCategory})`;
+          const sheetName = `${event.eventName.slice(0, 20)} (${
+            event.eventDay
+          } - ${event.eventCategory.charAt(0)})`;
           XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
         }
       }

@@ -4,6 +4,8 @@ import Table from 'react-bootstrap/Table';
 import Alert from 'react-bootstrap/Alert';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 interface Student {
   _id: string;
@@ -105,6 +107,24 @@ function StudentList() {
     setSearchQuery(e.target.value);
   };
 
+  const handleExportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(
+      students.map(({ name, rollNumber, email }, index) => ({
+        "Sr. No.": index + 1,
+        Name: name,
+        "Roll Number": rollNumber,
+        Email: email,
+      }))
+    );
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+
+    saveAs(data, "Student_List.xlsx");
+  };
+
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.rollNumber.includes(searchQuery) ||
@@ -118,8 +138,12 @@ function StudentList() {
   return (
     <div className="container mt-5">
       {showAlert && (
-        <Alert variant={showAlert.variant} onClose={() => setShowAlert(null)} dismissible 
-         style={{ position:'absolute', top:'10px', right:'40px' }}>
+        <Alert
+          variant={showAlert.variant}
+          onClose={() => setShowAlert(null)}
+          dismissible
+          style={{ position: "absolute", top: "10px", right: "40px" }}
+        >
           {showAlert.message}
         </Alert>
       )}
@@ -131,8 +155,11 @@ function StudentList() {
           value={searchQuery}
           onChange={handleSearchChange}
           className="form-control"
-          style={{ width: '300px' }}
+          style={{ width: "300px" }}
         />
+        <button className="btn btn-success" onClick={handleExportToExcel}>
+          Export to Excel
+        </button>
       </div>
       <Table striped bordered variant="dark">
         <thead>
@@ -141,7 +168,9 @@ function StudentList() {
             <th>Name</th>
             <th>Roll Number</th>
             <th>Email</th>
-            <th colSpan={3} className="text-center">Actions</th>
+            <th colSpan={3} className="text-center">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -154,7 +183,7 @@ function StudentList() {
                     <input
                       type="text"
                       name="name"
-                      value={editedStudent?.name || ''}
+                      value={editedStudent?.name || ""}
                       onChange={handleChange}
                       className="form-control"
                     />
@@ -167,7 +196,7 @@ function StudentList() {
                     <input
                       type="text"
                       name="rollNumber"
-                      value={editedStudent?.rollNumber || ''}
+                      value={editedStudent?.rollNumber || ""}
                       onChange={handleChange}
                       className="form-control"
                     />
@@ -180,7 +209,7 @@ function StudentList() {
                     <input
                       type="text"
                       name="email"
-                      value={editedStudent?.email || ''}
+                      value={editedStudent?.email || ""}
                       onChange={handleChange}
                       className="form-control"
                     />
@@ -190,24 +219,35 @@ function StudentList() {
                 </td>
                 <td className="text-center">
                   {editingId === student._id ? (
-                    <button className="btn btn-success btn-sm" onClick={handleSave}>
+                    <button
+                      className="btn btn-success btn-sm"
+                      onClick={handleSave}
+                    >
                       Save
                     </button>
                   ) : (
-                    <button className="btn btn-primary btn-sm" onClick={() => handleEdit(student)}>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleEdit(student)}
+                    >
                       Edit
                     </button>
                   )}
                 </td>
                 <td className="text-center">
-                  <button className="btn btn-warning btn-sm" onClick={() => handleSendEmail(student.email)}>
+                  <button
+                    className="btn btn-warning btn-sm"
+                    onClick={() => handleSendEmail(student.email)}
+                  >
                     Send Email
                   </button>
                 </td>
                 <td className="text-center">
                   <button
                     className="btn btn-danger btn-sm"
-                    onClick={() => setShowDeleteModal({ show: true, studentId: student._id })}
+                    onClick={() =>
+                      setShowDeleteModal({ show: true, studentId: student._id })
+                    }
                   >
                     Delete
                   </button>
@@ -216,7 +256,9 @@ function StudentList() {
             ))
           ) : (
             <tr>
-              <td colSpan={8} className="text-center">No results found</td>
+              <td colSpan={8} className="text-center">
+                No results found
+              </td>
             </tr>
           )}
         </tbody>
@@ -225,12 +267,17 @@ function StudentList() {
         show={showDeleteModal.show}
         onHide={() => setShowDeleteModal({ show: false, studentId: null })}
       >
-        <Modal.Header style={{ backgroundColor: '#333' }} closeButton>
+        <Modal.Header style={{ backgroundColor: "#333" }} closeButton>
           <Modal.Title>Confirm Deletion</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ backgroundColor: '#333' }}>Are you sure you want to delete this student?</Modal.Body>
-        <Modal.Footer style={{ backgroundColor: '#333' }}>
-          <Button variant="secondary" onClick={() => setShowDeleteModal({ show: false, studentId: null })}>
+        <Modal.Body style={{ backgroundColor: "#333" }}>
+          Are you sure you want to delete this student?
+        </Modal.Body>
+        <Modal.Footer style={{ backgroundColor: "#333" }}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDeleteModal({ show: false, studentId: null })}
+          >
             Cancel
           </Button>
           <Button
